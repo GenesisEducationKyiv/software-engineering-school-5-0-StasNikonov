@@ -8,6 +8,6 @@ const isValidFields = (email, city, frequency) => {
 const isValidEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
-}
+};
 
 module.exports = { isValidFields, isValidEmail };

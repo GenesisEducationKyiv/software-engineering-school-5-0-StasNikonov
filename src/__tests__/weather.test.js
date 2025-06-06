@@ -15,13 +15,11 @@ describe('weather api', () => {
     const response = await request(app).get('/api/weather?city=');
     expect(response.statusCode).toBe(400);
     expect(response.body.message).toMatch(/Invalid request/i);
-  })
+  });
 
   it('should fail with invalid city', async () => {
     const response = await request(app).get('/api/weather?city=K');
     expect(response.statusCode).toBe(404);
     expect(response.body.message).toMatch(/City not found/i);
-  })
-})
-
-
+  });
+});

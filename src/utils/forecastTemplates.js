@@ -1,4 +1,10 @@
-const forecastEmail = ({ city, temp_c, humidity, condition, unsubscribeLink }) => `
+const forecastEmail = ({
+  city,
+  temp_c,
+  humidity,
+  condition,
+  unsubscribeLink,
+}) => `
   <div style="font-family: Arial, sans-serif; color: #333;">
     <h2>Прогноз погоди для міста ${city}</h2>
     <p><strong>Температура:</strong> ${temp_c}°C</p>

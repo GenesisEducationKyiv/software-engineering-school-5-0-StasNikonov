@@ -10,7 +10,7 @@ const createSubscription = ({ email, city, frequency, token }) => {
     city,
     frequency,
     confirmed: false,
-    token
+    token,
   });
 };
 
@@ -32,5 +32,5 @@ module.exports = {
   createSubscription,
   findByToken,
   confirmSubscription,
-  deleteSubscription
+  deleteSubscription,
 };

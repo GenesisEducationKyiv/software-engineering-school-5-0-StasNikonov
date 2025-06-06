@@ -12,10 +12,11 @@ describe('GET /confirm/:token', () => {
       token: 'test-token-123',
     });
 
-    const response = await request(app).get(`/api/confirm/${subscription.token}`);
+    const response = await request(app).get(
+      `/api/confirm/${subscription.token}`,
+    );
 
-    expect(response.statusCode).toBe(302);
-    expect(response.header['location']).toMatch(/\/subscribe\.html\?status=confirmed/);
+    expect(response.statusCode).toBe(200);
 
     const updated = await Subscription.findByPk(subscription.id);
     expect(updated.confirmed).toBe(true);

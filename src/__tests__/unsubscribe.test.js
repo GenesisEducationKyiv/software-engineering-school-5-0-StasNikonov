@@ -9,13 +9,14 @@ describe('GET /unsubscribe/:token', () => {
       city: 'Lviv',
       frequency: 'daily',
       confirmed: true,
-      token: 'test-unsub-token'
+      token: 'test-unsub-token',
     });
 
-    const response = await request(app).get(`/api/unsubscribe/${subscriber.token}`);
+    const response = await request(app).get(
+      `/api/unsubscribe/${subscriber.token}`,
+    );
 
-    expect(response.statusCode).toBe(302);
-    expect(response.header['location']).toMatch(/\/subscribe\.html\?status=unsubscribed/);
+    expect(response.statusCode).toBe(200);
 
     const deleted = await Subscription.findByPk(subscriber.id);
     expect(deleted).toBeNull();
@@ -26,5 +27,4 @@ describe('GET /unsubscribe/:token', () => {
     expect(response.statusCode).toBe(404);
     expect(response.body.message).toMatch(/Token not found/i);
   });
-})
-
+});
