@@ -1,4 +1,4 @@
-const {validateCity} = require("./cityValidator");
+const { validateCity } = require('./cityValidator');
 const validateWeatherFields = async (city) => {
   if (!city) {
     return { valid: false, status: 400, message: 'Invalid request' };

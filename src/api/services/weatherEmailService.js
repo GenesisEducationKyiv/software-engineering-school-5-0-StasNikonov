@@ -10,7 +10,7 @@ const sendWeatherEmailToSubscribers = async (frequency) => {
     });
 
     for (let subscriber of subscribers) {
-      const { email, city, token  } = subscriber;
+      const { email, city, token } = subscriber;
 
       try {
         const weather = await getWeather(city);
@@ -22,7 +22,7 @@ const sendWeatherEmailToSubscribers = async (frequency) => {
           temp_c: weather.temperature,
           humidity: weather.humidity,
           condition: weather.description,
-          unsubscribeLink
+          unsubscribeLink,
         });
 
         const mailOptions = {

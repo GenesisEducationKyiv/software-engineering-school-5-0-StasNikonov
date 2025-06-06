@@ -1,7 +1,7 @@
 const express = require('express');
 const subscriptionRoutes = require('./src/api/routes/subscription');
 const weatherRoutes = require('./src/api/routes/weather');
-const {join} = require("node:path");
+const { join } = require('node:path');
 
 const app = express();
 
