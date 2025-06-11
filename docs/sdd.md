@@ -50,7 +50,7 @@
 
 ## 3. High-level Architecture
 
-![High-Level-Architecture](High-Level-Architecture.png)
+![High-Level-Architecture](HighLevelArchitecture.png)
 
 ## 4. Component design
 
