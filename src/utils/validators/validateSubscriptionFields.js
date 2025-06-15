@@ -1,7 +1,13 @@
 const isValidFields = (email, city, frequency) => {
-  if (!email || !city || !frequency) {
+  const allFields = [email, city, frequency];
+  const allValid = allFields.every(
+    (field) => typeof field === 'string' && field.trim().length > 0,
+  );
+
+  if (!allValid) {
     return { valid: false, status: 400, message: 'Invalid input' };
   }
+
   return { valid: true };
 };
 

@@ -14,7 +14,7 @@ describe('weather api', () => {
   it('should fail with missing required fields', async () => {
     const response = await request(app).get('/api/weather?city=');
     expect(response.statusCode).toBe(400);
-    expect(response.body.message).toMatch(/Invalid request/i);
+    expect(response.body.message).toMatch(/City parameter is required/i);
   });
 
   it('should fail with invalid city', async () => {
