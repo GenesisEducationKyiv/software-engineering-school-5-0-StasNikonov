@@ -1,25 +1,16 @@
-const {
-  validateWeatherFields,
-} = require('../middlewares/validateWeatherFields');
-const { getWeather } = require('../services/weatherService');
+const { getWeather } = require('../services/weatherAdapter');
+const { fetchWeatherData } = require('../integrations/weatherApiClient');
+const formatWeatherResponse = require('../../utils/formatWeatherResponse');
 
 const weatherController = async (req, res) => {
   const { city } = req.query;
 
-  const validation = await validateWeatherFields(city);
-  if (!validation.valid) {
-    return res.status(validation.status).json({ message: validation.message });
-  }
-
   try {
-    const weather = await getWeather(city);
-    res.status(200).json({
-      message: `Weather forecast for ${weather.city}`,
-      temperature: `${weather.temperature}°C`,
-      humidity: `${weather.humidity}%`,
-      description: weather.description,
-    });
+    const weather = await getWeather(city, fetchWeatherData);
+    const formatted = formatWeatherResponse(weather);
+    res.status(200).json(formatted);
   } catch (error) {
+    console.error('❌ getWeather error:', error.message);
     res.status(500).json({ message: `Error in getWeather: ${error.message}` });
   }
 };
