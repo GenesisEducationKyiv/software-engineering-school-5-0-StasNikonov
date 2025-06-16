@@ -1,20 +1,14 @@
 const { v4: uuidv4 } = require('uuid');
-const { confirmationEmail } = require('../../utils/emailTemplates');
+const { sendConfirmationEmail } = require('../adapters/EmailAdapter');
 
-const subscribe = async ({ email, city, frequency }, db, transporter) => {
+const subscribe = async ({ email, city, frequency }, db) => {
   const existing = await db.findSubscription(email, city);
   if (existing) return { status: 409, message: 'Email already exists' };
 
   const token = uuidv4();
   await db.createSubscription({ email, city, frequency, token });
 
-  const confirmLink = `${process.env.BASE_URL}/api/confirm/${token}`;
-  await transporter.sendMail({
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: 'Підтвердження підписки на погоду',
-    html: confirmationEmail(city, confirmLink),
-  });
+  await sendConfirmationEmail(email, city, token);
 
   return {
     status: 200,

@@ -1,4 +1,4 @@
-const { getWeather } = require('../services/weatherAdapter');
+const { getWeather } = require('../adapters/weatherAdapter');
 const { fetchWeatherData } = require('../integrations/weatherApiClient');
 const formatWeatherResponse = require('../../utils/formatWeatherResponse');
 
