@@ -3,8 +3,8 @@ const db = require('../services/subscriptionRepository');
 const {
   sendWeatherEmailToSubscribers,
 } = require('../services/weatherEmailService');
-const { getWeather } = require('../services/weatherAdapter');
-const transporter = require('./mailer');
+const { getWeather } = require('../adapters/weatherAdapter');
+const transporter = require('./nodemailerClient');
 
 cron.schedule('0 * * * *', async () => {
   console.log('⏰ Hourly weather update');

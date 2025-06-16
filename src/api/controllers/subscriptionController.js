@@ -1,14 +1,9 @@
 const subscriptionService = require('../services/subscriptionService');
 const db = require('../services/subscriptionRepository');
-const transporter = require('../integrations/mailer');
 
 const subscribeController = async (req, res) => {
   try {
-    const result = await subscriptionService.subscribe(
-      req.body,
-      db,
-      transporter,
-    );
+    const result = await subscriptionService.subscribe(req.body, db);
     res.status(result.status).json({ message: result.message });
   } catch (error) {
     console.error(error);
