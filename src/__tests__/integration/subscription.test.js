@@ -1,25 +1,50 @@
-jest.mock('nodemailer');
+jest.mock('../../api/integrations/nodemailerClient');
+jest.mock('../../api/integrations/weatherApiClient', () => ({
+  fetchWeatherData: jest.fn().mockResolvedValue({
+    location: { name: 'Kyiv' },
+    current: {
+      temp_c: 18,
+      humidity: 55,
+      condition: {
+        text: 'Місцями дощ',
+      },
+    },
+  }),
+}));
 
 const request = require('supertest');
-const app = require('../../app');
-const { Subscription } = require('../db/models');
+const app = require('../../../app');
+const { Subscription } = require('../../db/models');
 
 describe('Weather Subscription API', () => {
+  const testEmail = 'test@example.com';
+
+  beforeEach(async () => {
+    await Subscription.destroy({ where: { email: testEmail } });
+  });
+
+  afterEach(async () => {
+    await Subscription.destroy({ where: { email: testEmail } });
+  });
+
   it('should subscribe a user with valid data', async () => {
     const response = await request(app).post('/api/subscribe').send({
-      email: 'test@example.com',
+      email: testEmail,
       city: 'Kyiv',
       frequency: 'daily',
     });
 
     expect(response.statusCode).toBe(200);
     expect(response.body.message).toMatch(/confirmation/i);
+
+    const sub = await Subscription.findOne({ where: { email: testEmail } });
+    expect(sub).not.toBeNull();
+    expect(sub.confirmed).toBe(false);
   });
 
   it('should fail with missing required fields', async () => {
     const response = await request(app).post('/api/subscribe').send({
-      email: 'test@example.com',
-      city: ' ',
+      email: testEmail,
       frequency: 'daily',
     });
 
@@ -40,7 +65,7 @@ describe('Weather Subscription API', () => {
 
   it('should fail with invalid frequency', async () => {
     const response = await request(app).post('/api/subscribe').send({
-      email: 'test@example.com',
+      email: testEmail,
       city: 'Kyiv',
       frequency: 'day',
     });
@@ -51,16 +76,29 @@ describe('Weather Subscription API', () => {
 
   it('should fail with invalid city', async () => {
     const response = await request(app).post('/api/subscribe').send({
-      email: 'test@example.com',
-      city: 'K',
+      email: testEmail,
+      city: 'UnknownCity',
       frequency: 'daily',
     });
 
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(404);
     expect(response.body.message).toMatch(/City not found/i);
   });
 
-  afterEach(async () => {
-    await Subscription.destroy({ where: { email: 'test@example.com' } });
+  it('should not allow duplicate subscriptions', async () => {
+    await request(app).post('/api/subscribe').send({
+      email: testEmail,
+      city: 'Kyiv',
+      frequency: 'daily',
+    });
+
+    const response = await request(app).post('/api/subscribe').send({
+      email: testEmail,
+      city: 'Kyiv',
+      frequency: 'daily',
+    });
+
+    expect(response.statusCode).toBe(409);
+    expect(response.body.message).toMatch(/Email already exists/i);
   });
 });
