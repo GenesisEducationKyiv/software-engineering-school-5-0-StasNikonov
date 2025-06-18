@@ -31,7 +31,7 @@ const validateSubscriptionInput = async (req, res, next) => {
 
     const isCityCorrect = await validateCity(city);
     if (!isCityCorrect) {
-      return res.status(400).json({ error: true, message: 'City not found' });
+      return res.status(404).json({ error: true, message: 'City not found' });
     }
 
     next();

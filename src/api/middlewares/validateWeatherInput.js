@@ -24,4 +24,4 @@ const validateWeatherInput = async (req, res, next) => {
   next();
 };
 
-module.exports = { validateWeatherFields: validateWeatherInput };
+module.exports = { validateWeatherInput };

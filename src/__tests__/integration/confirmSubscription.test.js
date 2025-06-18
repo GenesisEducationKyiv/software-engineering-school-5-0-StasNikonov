@@ -1,21 +1,28 @@
 const request = require('supertest');
-const app = require('../../app');
-const { Subscription } = require('../db/models');
+const app = require('../../../app');
+const { Subscription } = require('../../db/models');
 
 describe('GET /confirm/:token', () => {
-  it('should confirm subscription with valid token', async () => {
-    const subscription = await Subscription.create({
-      email: 'confirm@example.com',
+  const testEmail = 'confirm@example.com';
+  const testToken = 'test-token-123';
+  let subscription;
+
+  beforeEach(async () => {
+    subscription = await Subscription.create({
+      email: testEmail,
       city: 'Kyiv',
       frequency: 'daily',
       confirmed: false,
-      token: 'test-token-123',
+      token: testToken,
     });
+  });
 
-    const response = await request(app).get(
-      `/api/confirm/${subscription.token}`,
-    );
+  afterEach(async () => {
+    await Subscription.destroy({ where: { email: testEmail } });
+  });
 
+  it('should confirm subscription with valid token', async () => {
+    const response = await request(app).get(`/api/confirm/${testToken}`);
     expect(response.statusCode).toBe(200);
 
     const updated = await Subscription.findByPk(subscription.id);
@@ -26,9 +33,5 @@ describe('GET /confirm/:token', () => {
     const response = await request(app).get('/api/confirm/non-existing-token');
     expect(response.statusCode).toBe(404);
     expect(response.body.message).toMatch(/Token not found/i);
-  });
-
-  afterEach(async () => {
-    await Subscription.destroy({ where: { email: 'confirm@example.com' } });
   });
 });
