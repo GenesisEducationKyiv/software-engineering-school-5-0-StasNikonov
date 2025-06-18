@@ -1,31 +1,33 @@
+jest.mock('../../api/integrations/weatherApiClient');
+
 const request = require('supertest');
 const app = require('../../../app');
+const { fetchWeatherData } = require('../../api/integrations/weatherApiClient');
 
-const WeatherAPIProvider = require('../../api/providers/WeatherAPIProvider');
-
-jest.mock('../../api/providers/WeatherAPIProvider', () => {
-  return jest.fn().mockImplementation(() => ({
-    fetch: jest.fn().mockResolvedValue({
-      location: { name: 'Kyiv' },
-      current: {
-        temp_c: 18.0,
-        humidity: 86,
-        condition: { text: 'Місцями дощ' },
-      },
-    }),
-  }));
-});
-
-describe('GET /api/weather', () => {
+describe('weather API', () => {
   const city = 'Kyiv';
 
   beforeEach(() => {
-    WeatherAPIProvider.mockClear();
+    fetchWeatherData.mockClear();
   });
 
   it('should return mocked weather data', async () => {
+    fetchWeatherData.mockResolvedValue({
+      location: {
+        name: 'Kyiv',
+      },
+      current: {
+        temp_c: 18.0,
+        humidity: 86,
+        condition: {
+          text: 'Місцями дощ',
+        },
+      },
+    });
+
     const response = await request(app).get(`/api/weather?city=${city}`);
 
+    expect(fetchWeatherData).toHaveBeenCalledWith(city);
     expect(response.statusCode).toBe(200);
     expect(response.body).toEqual({
       message: 'Weather forecast for Kyiv',
@@ -33,10 +35,5 @@ describe('GET /api/weather', () => {
       humidity: '86%',
       description: 'Місцями дощ',
     });
-
-    expect(WeatherAPIProvider).toHaveBeenCalledTimes(1);
-
-    const instance = WeatherAPIProvider.mock.results[0].value;
-    expect(instance.fetch).toHaveBeenCalledWith(city);
   });
 });

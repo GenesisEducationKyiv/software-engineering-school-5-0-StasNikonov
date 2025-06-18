@@ -1,116 +1,122 @@
-const SubscriptionService = require('../../api/services/subscriptionService');
+const { subscribe } = require('../../api/services/subscriptionService');
+const { confirm } = require('../../api/services/subscriptionService');
+const { unsubscribe } = require('../../api/services/subscriptionService');
+const { sendConfirmationEmail } = require('../../api/adapters/EmailAdapter');
 
-describe('SubscriptionService', () => {
-  let subscriptionService;
-  let mockDb;
-  let mockEmailAdapter;
+jest.mock('../../api/adapters/EmailAdapter');
+jest.mock('uuid', () => ({ v4: jest.fn(() => 'mock-token') }));
+
+describe('subscribe', () => {
+  let db;
 
   beforeEach(() => {
-    mockDb = {
+    db = {
       findSubscription: jest.fn(),
       createSubscription: jest.fn(),
+    };
+    sendConfirmationEmail.mockClear();
+  });
+
+  it('should return 409 if subscription already exists', async () => {
+    db.findSubscription.mockResolvedValue(true);
+
+    const result = await subscribe(
+      { email: 'test@test.com', city: 'Kyiv', frequency: 'daily' },
+      db,
+    );
+    expect(result.status).toBe(409);
+    expect(result.message).toMatch(/Email already exists/);
+  });
+
+  it('should create subscription and send confirmation email', async () => {
+    db.findSubscription.mockResolvedValue(null);
+    db.createSubscription.mockResolvedValue();
+    sendConfirmationEmail.mockResolvedValue();
+
+    const result = await subscribe(
+      { email: 'test@test.com', city: 'Kyiv', frequency: 'daily' },
+      db,
+    );
+
+    expect(db.createSubscription).toHaveBeenCalledWith({
+      email: 'test@test.com',
+      city: 'Kyiv',
+      frequency: 'daily',
+      token: 'mock-token',
+    });
+
+    expect(sendConfirmationEmail).toHaveBeenCalledWith(
+      'test@test.com',
+      'Kyiv',
+      'mock-token',
+    );
+    expect(result.status).toBe(200);
+    expect(result.message).toMatch(
+      /Subscription successful. Confirmation email sent./i,
+    );
+  });
+});
+
+describe('confirm', () => {
+  let db;
+
+  beforeEach(() => {
+    db = {
       findByToken: jest.fn(),
       confirmSubscription: jest.fn(),
+    };
+  });
+
+  it('should return 404 if token is not found', async () => {
+    db.findByToken.mockResolvedValue(null);
+
+    const result = await confirm({ token: 'invalid-token' }, db);
+
+    expect(result.status).toBe(404);
+    expect(result.message).toMatch(/Token not found/i);
+    expect(db.confirmSubscription).not.toHaveBeenCalled();
+  });
+
+  it('should confirm subscription if token is valid', async () => {
+    const fakeSub = { email: 'test@test.com' };
+    db.findByToken.mockResolvedValue(fakeSub);
+
+    const result = await confirm({ token: 'valid-token' }, db);
+
+    expect(db.confirmSubscription).toHaveBeenCalledWith(fakeSub);
+    expect(result.status).toBe(200);
+    expect(result.message).toMatch(/Subscription confirmed successfully/i);
+  });
+});
+
+describe('unsubscribe', () => {
+  let db;
+
+  beforeEach(() => {
+    db = {
+      findByToken: jest.fn(),
       deleteSubscription: jest.fn(),
     };
-
-    mockEmailAdapter = {
-      sendConfirmationEmail: jest.fn(),
-    };
-
-    subscriptionService = new SubscriptionService(mockDb, mockEmailAdapter);
   });
 
-  describe('subscribe', () => {
-    it('should return 409 if subscription already exists', async () => {
-      mockDb.findSubscription.mockResolvedValue(true);
+  it('should return 404 if token is not found', async () => {
+    db.findByToken.mockResolvedValue(null);
 
-      const result = await subscriptionService.subscribe({
-        email: 'test@test.com',
-        city: 'Kyiv',
-        frequency: 'daily',
-      });
+    const result = await unsubscribe({ token: 'invalid-token' }, db);
 
-      expect(result.status).toBe(409);
-      expect(result.message).toMatch(/Email already exists/);
-    });
-
-    it('should create subscription and send confirmation email', async () => {
-      mockDb.findSubscription.mockResolvedValue(null);
-      mockDb.createSubscription.mockResolvedValue();
-      mockEmailAdapter.sendConfirmationEmail.mockResolvedValue();
-
-      const result = await subscriptionService.subscribe({
-        email: 'test@test.com',
-        city: 'Kyiv',
-        frequency: 'daily',
-      });
-
-      expect(mockDb.createSubscription).toHaveBeenCalledWith({
-        email: 'test@test.com',
-        city: 'Kyiv',
-        frequency: 'daily',
-        token: expect.any(String), // токен генерується через uuid
-      });
-
-      expect(mockEmailAdapter.sendConfirmationEmail).toHaveBeenCalledWith(
-        'test@test.com',
-        'Kyiv',
-        expect.any(String),
-      );
-
-      expect(result.status).toBe(200);
-      expect(result.message).toMatch(
-        /Subscription successful. Confirmation email sent./i,
-      );
-    });
+    expect(result.status).toBe(404);
+    expect(result.message).toMatch(/Token not found/i);
+    expect(db.deleteSubscription).not.toHaveBeenCalled();
   });
 
-  describe('confirm', () => {
-    it('should return 404 if token not found', async () => {
-      mockDb.findByToken.mockResolvedValue(null);
+  it('should delete subscription if token is valid', async () => {
+    const fakeSub = { email: 'test@test.com' };
+    db.findByToken.mockResolvedValue(fakeSub);
 
-      const result = await subscriptionService.confirm({ token: 'bad-token' });
+    const result = await unsubscribe({ token: 'valid-token' }, db);
 
-      expect(result.status).toBe(404);
-      expect(result.message).toMatch(/Token not found/i);
-    });
-
-    it('should confirm subscription if token is valid', async () => {
-      const fakeSub = {};
-      mockDb.findByToken.mockResolvedValue(fakeSub);
-
-      const result = await subscriptionService.confirm({ token: 'good-token' });
-
-      expect(mockDb.confirmSubscription).toHaveBeenCalledWith(fakeSub);
-      expect(result.status).toBe(200);
-      expect(result.message).toMatch(/Subscription confirmed successfully/i);
-    });
-  });
-
-  describe('unsubscribe', () => {
-    it('should return 404 if token not found', async () => {
-      mockDb.findByToken.mockResolvedValue(null);
-
-      const result = await subscriptionService.unsubscribe({
-        token: 'bad-token',
-      });
-
-      expect(result.status).toBe(404);
-      expect(result.message).toMatch(/Token not found/i);
-    });
-
-    it('should delete subscription if token is valid', async () => {
-      const fakeSub = {};
-      mockDb.findByToken.mockResolvedValue(fakeSub);
-
-      const result = await subscriptionService.unsubscribe({
-        token: 'good-token',
-      });
-
-      expect(mockDb.deleteSubscription).toHaveBeenCalledWith(fakeSub);
-      expect(result.status).toBe(200);
-      expect(result.message).toMatch(/Unsubscribed successfully/i);
-    });
+    expect(db.deleteSubscription).toHaveBeenCalledWith(fakeSub);
+    expect(result.status).toBe(200);
+    expect(result.message).toMatch(/Unsubscribed successfully/i);
   });
 });

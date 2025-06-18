@@ -1,19 +1,16 @@
 jest.mock('../../api/integrations/nodemailerClient');
-
-jest.mock('../../api/providers/WeatherAPIProvider', () => {
-  return jest.fn().mockImplementation(() => {
-    return {
-      fetch: jest.fn().mockResolvedValue({
-        location: { name: 'Kyiv' },
-        current: {
-          temp_c: 18,
-          humidity: 55,
-          condition: { text: 'Місцями дощ' },
-        },
-      }),
-    };
-  });
-});
+jest.mock('../../api/integrations/weatherApiClient', () => ({
+  fetchWeatherData: jest.fn().mockResolvedValue({
+    location: { name: 'Kyiv' },
+    current: {
+      temp_c: 18,
+      humidity: 55,
+      condition: {
+        text: 'Місцями дощ',
+      },
+    },
+  }),
+}));
 
 const request = require('supertest');
 const app = require('../../../app');
