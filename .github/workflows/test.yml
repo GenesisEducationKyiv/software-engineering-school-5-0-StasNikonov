@@ -17,6 +17,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Start database
+        run: docker compose --env-file .env.test -f docker-compose.test.yml up -d test_db
+
+      - name: Run DB migrations
+        run: docker compose --env-file .env.test -f docker-compose.test.yml run --rm test_runner npx sequelize-cli db:migrate --config src/db/config/config.js
+
       - name: Run Integration Tests
         run: docker compose --env-file .env.test -f docker-compose.test.yml run --rm test_runner npm run test:integration
 
