@@ -1,7 +1,9 @@
 const path = require('path');
 const env = process.env.NODE_ENV || 'development';
 const envFile = env === 'test' ? '.env.test' : '.env';
-require('dotenv').config({ path: path.resolve(__dirname, '../../', envFile) });
+require('dotenv').config({
+  path: path.resolve(__dirname, '../../../', envFile),
+});
 
 module.exports = {
   [env]: {
