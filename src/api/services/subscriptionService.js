@@ -1,36 +1,39 @@
-const { Subscription } = require('../../db/models');
+const { v4: uuidv4 } = require('uuid');
+const { sendConfirmationEmail } = require('../adapters/EmailAdapter');
 
-const findSubscription = (email, city) => {
-  return Subscription.findOne({ where: { email, city } });
+const subscribe = async ({ email, city, frequency }, db) => {
+  const existing = await db.findSubscription(email, city);
+  if (existing) return { status: 409, message: 'Email already exists' };
+
+  const token = uuidv4();
+  await db.createSubscription({ email, city, frequency, token });
+
+  await sendConfirmationEmail(email, city, token);
+
+  return {
+    status: 200,
+    message: 'Subscription successful. Confirmation email sent.',
+  };
 };
 
-const createSubscription = ({ email, city, frequency, token }) => {
-  return Subscription.create({
-    email,
-    city,
-    frequency,
-    confirmed: false,
-    token,
-  });
+const confirm = async ({ token }, db) => {
+  const subscription = await db.findByToken(token);
+  if (!subscription) return { status: 404, message: 'Token not found' };
+
+  await db.confirmSubscription(subscription);
+  return { status: 200, message: 'Subscription confirmed successfully' };
 };
 
-const findByToken = (token) => {
-  return Subscription.findOne({ where: { token } });
-};
+const unsubscribe = async ({ token }, db) => {
+  const subscription = await db.findByToken(token);
+  if (!subscription) return { status: 404, message: 'Token not found' };
 
-const confirmSubscription = async (subscription) => {
-  subscription.confirmed = true;
-  return subscription.save();
-};
-
-const deleteSubscription = (subscription) => {
-  return subscription.destroy();
+  await db.deleteSubscription(subscription);
+  return { status: 200, message: 'Unsubscribed successfully' };
 };
 
 module.exports = {
-  findSubscription,
-  createSubscription,
-  findByToken,
-  confirmSubscription,
-  deleteSubscription,
+  subscribe,
+  confirm,
+  unsubscribe,
 };
