@@ -18,7 +18,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Run Unit Tests
-        run: test:unit
+        run: npm run test:unit
 
   test-integration:
     name: Integration Tests
@@ -30,7 +30,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Run Integration Tests
-        run: test:integration
+        run: npm run test:integration
 
   test-e2e:
     name: E2E Tests
@@ -42,4 +42,4 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Run E2E Tests
-        run: test:e2e
+        run: npm run test:e2e
