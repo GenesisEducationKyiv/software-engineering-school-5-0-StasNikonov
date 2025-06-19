@@ -1,9 +1,9 @@
 const { defineConfig } = require('@playwright/test');
 
-defineConfig({
-  testDir: '/e2e/',
+module.exports = defineConfig({
+  testDir: './src/__tests__/e2e',
   webServer: {
-    command: 'npm run start',
+    command: 'npm run dev',
     port: 3000,
     timeout: 120 * 1000,
     reuseExistingServer: !process.env.CI,
@@ -13,7 +13,3 @@ defineConfig({
     headless: true,
   },
 });
-
-module.exports = {
-  defineConfig,
-};
