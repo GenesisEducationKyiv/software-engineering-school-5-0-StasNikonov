@@ -7,17 +7,19 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
     healthcheck:
-       test: [ "CMD", "pg_isready", "-U", "postgres" ]
-       interval: 5s
-       timeout: 5s
-       retries: 5
+      test: ["CMD", "pg_isready", "-U", "${DB_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     ports:
       - "5433:5432"
     volumes:
       - pgtestdata:/var/lib/postgresql/data
 
   test_runner:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.test
     container_name: test_runner
     environment:
       NODE_ENV: test
@@ -32,7 +34,26 @@ services:
     depends_on:
       test_db:
         condition: service_healthy
-    command: sh -c "npx sequelize-cli db:migrate && npm test"
+    command: sh -c "npx sequelize-cli db:migrate --config src/db/config/config.js && npm test"
+
+  playwright_runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.playwright
+    container_name: playwright_runner
+    environment:
+      NODE_ENV: test
+      DB_HOST: test_db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      WEATHER_API_KEY: ${WEATHER_API_KEY}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASS: ${EMAIL_PASS}
+    depends_on:
+      test_db:
+        condition: service_healthy
 
 volumes:
   pgtestdata:
