@@ -18,7 +18,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Run Unit Tests
-        run: docker-compose --env-file .env.test -f docker-compose.test.yml run --rm test_runner npm run test:unit
+        run: test:unit
 
   test-integration:
     name: Integration Tests
@@ -30,7 +30,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Run Integration Tests
-        run: docker-compose --env-file .env.test -f docker-compose.test.yml run --rm test_runner npm run test:integration
+        run: test:integration
 
   test-e2e:
     name: E2E Tests
@@ -42,4 +42,4 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Run E2E Tests
-        run: docker-compose --env-file .env.test -f docker-compose.test.yml run --rm playwright_runner npm run test:e2e
+        run: test:e2e
