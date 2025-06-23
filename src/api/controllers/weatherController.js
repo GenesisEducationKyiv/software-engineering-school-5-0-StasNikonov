@@ -2,11 +2,11 @@ const WeatherAPIProvider = require('../providers/WeatherAPIProvider');
 const WeatherService = require('../services/weatherService');
 const formatWeatherResponse = require('../../utils/formatWeatherResponse');
 
-const weatherProvider = new WeatherAPIProvider();
-const weatherService = new WeatherService(weatherProvider);
-
 const weatherController = async (req, res) => {
   const { city } = req.query;
+
+  const weatherProvider = new WeatherAPIProvider();
+  const weatherService = new WeatherService(weatherProvider);
 
   try {
     const weather = await weatherService.getWeather(city);
