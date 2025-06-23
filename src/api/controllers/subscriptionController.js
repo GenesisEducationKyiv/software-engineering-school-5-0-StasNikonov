@@ -1,9 +1,17 @@
-const subscriptionService = require('../services/subscriptionService');
-const db = require('../services/subscriptionRepository');
+const SubscriptionService = require('../services/subscriptionService');
+const subscriptionRepository = require('../services/subscriptionRepository');
+const EmailAdapter = require('../adapters/EmailAdapter');
+
+const emailAdapter = new EmailAdapter();
+
+const subscriptionService = new SubscriptionService(
+  subscriptionRepository,
+  emailAdapter,
+);
 
 const subscribeController = async (req, res) => {
   try {
-    const result = await subscriptionService.subscribe(req.body, db);
+    const result = await subscriptionService.subscribe(req.body);
     res.status(result.status).json({ message: result.message });
   } catch (error) {
     console.error(error);
@@ -13,7 +21,7 @@ const subscribeController = async (req, res) => {
 
 const confirmController = async (req, res) => {
   try {
-    const result = await subscriptionService.confirm(req.params, db);
+    const result = await subscriptionService.confirm(req.params);
     res.status(result.status).json({ message: result.message });
   } catch (error) {
     console.error(error);
@@ -23,7 +31,7 @@ const confirmController = async (req, res) => {
 
 const unsubscribeController = async (req, res) => {
   try {
-    const result = await subscriptionService.unsubscribe(req.params, db);
+    const result = await subscriptionService.unsubscribe(req.params);
     res.status(result.status).json({ message: result.message });
   } catch (error) {
     console.error(error);

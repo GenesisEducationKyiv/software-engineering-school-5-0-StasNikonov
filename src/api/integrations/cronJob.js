@@ -1,17 +1,21 @@
 const cron = require('node-cron');
-const db = require('../services/subscriptionRepository');
-const {
-  sendWeatherEmailToSubscribers,
-} = require('../services/weatherEmailService');
-const { getWeather } = require('../adapters/weatherAdapter');
-const transporter = require('./nodemailerClient');
+const subscriptionRepository = require('../services/subscriptionRepository');
+const WeatherEmailService = require('../services/WeatherEmailService');
+const WeatherService = require('../services/weatherService');
+const emailAdapter = require('../adapters/EmailAdapter');
+
+const weatherEmailService = new WeatherEmailService(
+  WeatherService,
+  emailAdapter,
+  subscriptionRepository,
+);
 
 cron.schedule('0 * * * *', async () => {
   console.log('⏰ Hourly weather update');
-  await sendWeatherEmailToSubscribers('hourly', getWeather, transporter, db);
+  await weatherEmailService.sendEmails('hourly');
 });
 
 cron.schedule('0 8 * * *', async () => {
   console.log('📩 Daily weather update');
-  await sendWeatherEmailToSubscribers('daily', getWeather, transporter, db);
+  await weatherEmailService.sendEmails('daily');
 });

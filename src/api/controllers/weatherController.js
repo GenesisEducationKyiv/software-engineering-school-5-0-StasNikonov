@@ -1,12 +1,15 @@
-const { getWeather } = require('../adapters/weatherAdapter');
-const { fetchWeatherData } = require('../integrations/weatherApiClient');
+const WeatherAPIProvider = require('../providers/WeatherAPIProvider');
+const WeatherService = require('../services/weatherService');
 const formatWeatherResponse = require('../../utils/formatWeatherResponse');
+
+const weatherProvider = new WeatherAPIProvider();
+const weatherService = new WeatherService(weatherProvider);
 
 const weatherController = async (req, res) => {
   const { city } = req.query;
 
   try {
-    const weather = await getWeather(city, fetchWeatherData);
+    const weather = await weatherService.getWeather(city);
     const formatted = formatWeatherResponse(weather);
     res.status(200).json(formatted);
   } catch (error) {
