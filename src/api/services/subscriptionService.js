@@ -1,36 +1,49 @@
-const { Subscription } = require('../../db/models');
+const { v4: uuidv4 } = require('uuid');
 
-const findSubscription = (email, city) => {
-  return Subscription.findOne({ where: { email, city } });
-};
+class SubscriptionService {
+  constructor(subscriptionRepository, emailAdapter) {
+    this.subscriptionRepository = subscriptionRepository;
+    this.emailAdapter = emailAdapter;
+  }
 
-const createSubscription = ({ email, city, frequency, token }) => {
-  return Subscription.create({
-    email,
-    city,
-    frequency,
-    confirmed: false,
-    token,
-  });
-};
+  async subscribe({ email, city, frequency }) {
+    const existing = await this.subscriptionRepository.findSubscription(
+      email,
+      city,
+    );
+    if (existing) return { status: 409, message: 'Email already exists' };
 
-const findByToken = (token) => {
-  return Subscription.findOne({ where: { token } });
-};
+    const token = uuidv4();
+    await this.subscriptionRepository.createSubscription({
+      email,
+      city,
+      frequency,
+      token,
+    });
 
-const confirmSubscription = async (subscription) => {
-  subscription.confirmed = true;
-  return subscription.save();
-};
+    await this.emailAdapter.sendConfirmationEmail(email, city, token);
 
-const deleteSubscription = (subscription) => {
-  return subscription.destroy();
-};
+    return {
+      status: 200,
+      message: 'Subscription successful. Confirmation email sent.',
+    };
+  }
 
-module.exports = {
-  findSubscription,
-  createSubscription,
-  findByToken,
-  confirmSubscription,
-  deleteSubscription,
-};
+  async confirm({ token }) {
+    const subscription = await this.subscriptionRepository.findByToken(token);
+    if (!subscription) return { status: 404, message: 'Token not found' };
+
+    await this.subscriptionRepository.confirmSubscription(subscription);
+    return { status: 200, message: 'Subscription confirmed successfully' };
+  }
+
+  async unsubscribe({ token }) {
+    const subscription = await this.subscriptionRepository.findByToken(token);
+    if (!subscription) return { status: 404, message: 'Token not found' };
+
+    await this.subscriptionRepository.deleteSubscription(subscription);
+    return { status: 200, message: 'Unsubscribed successfully' };
+  }
+}
+
+module.exports = SubscriptionService;
