@@ -5,7 +5,7 @@ const formatWeatherResponse = require('../../utils/formatWeatherResponse');
 const weatherController = async (req, res) => {
   const { city } = req.query;
 
-  const weatherProvider = new WeatherAPIProvider();
+  const weatherProvider = new  WeatherAPIProvider();
   const weatherService = new WeatherService(weatherProvider);
 
   try {
