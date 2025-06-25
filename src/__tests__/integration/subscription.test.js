@@ -1,20 +1,7 @@
 jest.mock('../../api/integrations/nodemailerClient');
+jest.mock('axios');
 
-jest.mock('../../api/providers/WeatherAPIProvider', () => {
-  return jest.fn().mockImplementation(() => {
-    return {
-      fetch: jest.fn().mockResolvedValue({
-        location: { name: 'Kyiv' },
-        current: {
-          temp_c: 18,
-          humidity: 55,
-          condition: { text: 'Місцями дощ' },
-        },
-      }),
-    };
-  });
-});
-
+const axios = require('axios');
 const request = require('supertest');
 const app = require('../../../app');
 const { Subscription } = require('../../db/models');
@@ -23,7 +10,78 @@ describe('Weather Subscription API', () => {
   const testEmail = 'test@example.com';
 
   beforeEach(async () => {
+    jest.clearAllMocks();
     await Subscription.destroy({ where: { email: testEmail } });
+
+    global.fetch = jest.fn((url) => {
+      if (url.includes('weatherapi.com/v1/search.json')) {
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve([
+              {
+                id: 2501828,
+                name: 'Kyiv',
+                country: 'Ukraine',
+              },
+            ]),
+        });
+      }
+
+      if (url.includes('openweathermap.org/geo')) {
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve([
+              {
+                name: 'Kyiv',
+                lat: 50.45,
+                lon: 30.52,
+                country: 'UA',
+              },
+            ]),
+        });
+      }
+
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve([]),
+      });
+    });
+
+    axios.get.mockImplementation((url) => {
+      if (url.includes('weatherapi.com')) {
+        return Promise.resolve({
+          data: [
+            {
+              id: 2501828,
+              name: 'Kyiv',
+              region: "Kyyivs'ka Oblast'",
+              country: 'Ukraine',
+              lat: 50.43,
+              lon: 30.52,
+              url: 'kyiv-kyyivska-oblast-ukraine',
+            },
+          ],
+        });
+      }
+      if (url.includes('openweathermap.org/geo')) {
+        return Promise.resolve({
+          data: [{ lat: 50.45, lon: 30.52, name: 'Kyiv' }],
+        });
+      }
+      if (url.includes('openweathermap.org/data')) {
+        return Promise.resolve({
+          data: {
+            main: { temp: 291, humidity: 60 },
+            weather: [{ description: 'Clear sky' }],
+            name: 'Kyiv',
+          },
+        });
+      }
+
+      return Promise.reject(new Error('Unexpected axios call in test'));
+    });
   });
 
   afterEach(async () => {
@@ -78,6 +136,13 @@ describe('Weather Subscription API', () => {
   });
 
   it('should fail with invalid city', async () => {
+    global.fetch.mockImplementation(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve([]),
+      }),
+    );
+
     const response = await request(app).post('/api/subscribe').send({
       email: testEmail,
       city: 'UnknownCity',
