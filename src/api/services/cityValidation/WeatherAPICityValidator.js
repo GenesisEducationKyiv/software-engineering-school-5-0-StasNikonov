@@ -15,9 +15,7 @@ class WeatherAPICityValidator extends AbstractCityValidator {
 
       const data = await response.json();
 
-      if (!Array.isArray(data) || data.length === 0) {
-        return false;
-      }
+      if (!Array.isArray(data) || data.length === 0) return false;
 
       return true;
     } catch (error) {
