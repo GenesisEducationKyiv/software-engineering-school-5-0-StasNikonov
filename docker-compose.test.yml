@@ -29,12 +29,13 @@ services:
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
       WEATHER_API_KEY: ${WEATHER_API_KEY}
+      OWM_API_KEY: ${OWM_API_KEY}
       EMAIL_USER: ${EMAIL_USER}
       EMAIL_PASS: ${EMAIL_PASS}
     depends_on:
       test_db:
         condition: service_healthy
-    command: sh -c "npx sequelize-cli db:migrate --config src/db/config/config.js && npm test"
+    command: npm test
 
   playwright_runner:
     build:
@@ -49,11 +50,29 @@ services:
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
       WEATHER_API_KEY: ${WEATHER_API_KEY}
+      OWM_API_KEY: ${OWM_API_KEY}
       EMAIL_USER: ${EMAIL_USER}
       EMAIL_PASS: ${EMAIL_PASS}
     depends_on:
       test_db:
         condition: service_healthy
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: test_migrator
+    environment:
+      NODE_ENV: test
+      DB_HOST: test_db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+    depends_on:
+      test_db:
+        condition: service_healthy
+    command: sh -c "npx sequelize-cli db:migrate --config src/db/config/config.js"
 
 volumes:
   pgtestdata:

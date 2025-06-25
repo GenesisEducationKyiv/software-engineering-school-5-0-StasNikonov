@@ -1,11 +1,22 @@
 const cron = require('node-cron');
-const subscriptionRepository = require('../services/subscriptionRepository');
 const WeatherEmailService = require('../services/weatherEmailService');
 const WeatherService = require('../services/weatherService');
-const emailAdapter = require('../adapters/EmailAdapter');
+const EmailAdapter = require('../adapters/EmailAdapter');
+const subscriptionRepository = require('../services/subscriptionRepository');
+
+const WeatherAPIProvider = require('../providers/WeatherAPIProvider');
+const OpenWeatherMapProvider = require('../providers/OpenWeatherMapProvider');
+
+const weatherAPIProvider = new WeatherAPIProvider();
+const openWeatherMapProvider = new OpenWeatherMapProvider();
+weatherAPIProvider.setNext(openWeatherMapProvider);
+
+const weatherService = new WeatherService(weatherAPIProvider);
+
+const emailAdapter = new EmailAdapter();
 
 const weatherEmailService = new WeatherEmailService(
-  WeatherService,
+  weatherService,
   emailAdapter,
   subscriptionRepository,
 );

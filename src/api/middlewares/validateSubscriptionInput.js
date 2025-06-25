@@ -2,7 +2,7 @@ const {
   isValidEmail,
   isValidFields,
 } = require('../../utils/validators/validateSubscriptionFields');
-const { validateCity } = require('../../utils/validators/cityValidator');
+const { createValidator } = require('../services/cityValidation/cityValidator');
 
 const allowedFrequencies = ['hourly', 'daily'];
 
@@ -29,7 +29,8 @@ const validateSubscriptionInput = async (req, res, next) => {
         .json({ error: true, message: 'Invalid frequency value' });
     }
 
-    const isCityCorrect = await validateCity(city);
+    const validate = createValidator();
+    const isCityCorrect = await validate(city.trim());
     if (!isCityCorrect) {
       return res.status(404).json({ error: true, message: 'City not found' });
     }

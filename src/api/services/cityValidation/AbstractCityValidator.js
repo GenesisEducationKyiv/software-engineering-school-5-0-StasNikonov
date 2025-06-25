@@ -1,0 +1,11 @@
+class AbstractCityValidator {
+  setNext(provider) {
+    this.next = provider;
+    return provider;
+  }
+
+  async validateCity(city) {
+    throw new Error('validateCity(city) not implemented');
+  }
+}
+module.exports = AbstractCityValidator;

@@ -1,27 +1,41 @@
 const axios = require('axios');
 const AbstractWeatherProvider = require('./AbstractWeatherProvider');
+const logProviderResponse = require('../../utils/logProviderResponse');
 
 class OpenWeatherMapProvider extends AbstractWeatherProvider {
   async fetch(city) {
-    const apiKey = '6e086d006737748bf5760566509f2531';
-    const coordinateData = await axios.get(
-      `http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=5&appid=${apiKey}`,
-    );
-    const lat = coordinateData.data[0].lat;
-    const lon = coordinateData.data[0].lon;
-    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}`;
+    const apiKey = process.env.OWM_API_KEY;
 
     try {
-      const response = await axios.get(url);
-      return response.data;
-    } catch (error) {
-      console.error('❌ WeatherAPI error:', error.message);
-      if (this.next) {
-        return this.next.fetch(city);
-      }
-      throw new Error(
-        'Weather API request failed and no fallback provider available',
+      const geoResponse = await axios.get(
+        `http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${apiKey}`,
       );
+
+      logProviderResponse('openweathermap.org/geo', geoResponse.data);
+
+      const { lat, lon, name } = geoResponse.data[0];
+
+      const weatherResponse = await axios.get(
+        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric&lang=uk`,
+      );
+
+      const data = weatherResponse.data;
+
+      logProviderResponse('openweathermap.org/data', data);
+
+      return {
+        temperature: data.main.temp,
+        humidity: data.main.humidity,
+        description: data.weather[0].description,
+        city: name,
+      };
+    } catch (error) {
+      console.error('❌ OpenWeatherMap error:', error.message);
+      const err = new Error(
+        'OpenWeatherMap failed and no fallback provider available',
+      );
+      err.status = error.status || 500;
+      throw err;
     }
   }
 }

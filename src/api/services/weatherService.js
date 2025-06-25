@@ -4,14 +4,7 @@ class WeatherService {
   }
 
   async getWeather(city) {
-    const weatherData = await this.weatherProvider.fetch(city);
-
-    return {
-      temperature: weatherData.current.temp_c,
-      humidity: weatherData.current.humidity,
-      description: weatherData.current.condition.text,
-      city: weatherData.location.name,
-    };
+    return await this.weatherProvider.fetch(city);
   }
 }
 

@@ -1,4 +1,4 @@
-const { validateCity } = require('../../utils/validators/cityValidator');
+const { createValidator } = require('../services/cityValidation/cityValidator');
 
 const validateWeatherInput = async (req, res, next) => {
   const { city } = req.query;
@@ -10,7 +10,8 @@ const validateWeatherInput = async (req, res, next) => {
   }
 
   try {
-    const isCityCorrect = await validateCity(city.trim());
+    const validate = createValidator();
+    const isCityCorrect = await validate(city.trim());
     if (!isCityCorrect) {
       return res.status(404).json({ error: true, message: 'City not found' });
     }
