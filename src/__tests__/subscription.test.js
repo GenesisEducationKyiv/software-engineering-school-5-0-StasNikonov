@@ -16,6 +16,17 @@ describe('Weather Subscription API', () => {
     expect(response.body.message).toMatch(/confirmation/i);
   });
 
+  it('should fail with missing required fields', async () => {
+    const response = await request(app).post('/api/subscribe').send({
+      email: 'test@example.com',
+      city: ' ',
+      frequency: 'daily',
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.body.message).toMatch(/Invalid input/i);
+  });
+
   it('should fail with invalid email', async () => {
     const response = await request(app).post('/api/subscribe').send({
       email: 'testexample.com',
@@ -24,18 +35,18 @@ describe('Weather Subscription API', () => {
     });
 
     expect(response.statusCode).toBe(400);
-    expect(response.body.message).toMatch(/Invalid input/i);
+    expect(response.body.message).toMatch(/Invalid email format/i);
   });
 
-  it('should fail with missing required fields', async () => {
+  it('should fail with invalid frequency', async () => {
     const response = await request(app).post('/api/subscribe').send({
       email: 'test@example.com',
-      city: '',
-      frequency: 'daily',
+      city: 'Kyiv',
+      frequency: 'day',
     });
 
     expect(response.statusCode).toBe(400);
-    expect(response.body.message).toMatch(/Invalid input/i);
+    expect(response.body.message).toMatch(/Invalid frequency value/i);
   });
 
   it('should fail with invalid city', async () => {
@@ -46,7 +57,7 @@ describe('Weather Subscription API', () => {
     });
 
     expect(response.statusCode).toBe(400);
-    expect(response.body.message).toMatch(/Invalid input/i);
+    expect(response.body.message).toMatch(/City not found/i);
   });
 
   afterEach(async () => {
