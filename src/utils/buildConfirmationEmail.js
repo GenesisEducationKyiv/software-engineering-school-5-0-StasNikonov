@@ -1,4 +1,4 @@
-const confirmationEmail = (city, link) => `
+const buildConfirmationEmail = (city, link) => `
   <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f2f2f2;">
     <div style="max-width: 500px; margin: auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
       <div style="padding: 20px;">
@@ -12,4 +12,4 @@ const confirmationEmail = (city, link) => `
   </div>
 `;
 
-module.exports = { confirmationEmail };
+module.exports = { buildConfirmationEmail };

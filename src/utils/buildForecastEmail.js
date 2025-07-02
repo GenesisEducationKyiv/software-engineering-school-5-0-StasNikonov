@@ -1,4 +1,4 @@
-const forecastEmail = ({
+const buildForecastEmail = ({
   city,
   temp_c,
   humidity,
@@ -18,4 +18,4 @@ const forecastEmail = ({
     </p>
   </div>
 `;
-module.exports = { forecastEmail };
+module.exports = { buildForecastEmail };
