@@ -1,7 +1,7 @@
 const cron = require('node-cron');
-const subscriptionRepository = require('../services/subscriptionRepository');
+const subscriptionRepository = require('../services/subscription/SubscriptionRepository');
 const WeatherEmailService = require('../services/WeatherEmailService');
-const WeatherService = require('../services/weatherService');
+const WeatherService = require('../services/weather/WeatherService');
 const emailAdapter = require('../adapters/EmailAdapter');
 
 const weatherEmailService = new WeatherEmailService(

@@ -1,5 +1,7 @@
 const { sendEmail } = require('../integrations/nodemailerClient');
-const { confirmationEmail } = require('../../utils/emailTemplates');
+const {
+  buildConfirmationEmail,
+} = require('../../utils/buildConfirmationEmail');
 const { prepareEmailHtml } = require('../../utils/prepareEmailHtml');
 const { BASE_URL } = require('../../config/config');
 
@@ -22,7 +24,7 @@ class EmailAdapter {
     await sendEmail({
       to: email,
       subject: 'Підтвердження підписки на погоду',
-      html: confirmationEmail(city, confirmLink),
+      html: buildConfirmationEmail(city, confirmLink),
     });
   }
 }
