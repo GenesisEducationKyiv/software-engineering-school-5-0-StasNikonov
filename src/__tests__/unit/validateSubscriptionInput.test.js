@@ -100,4 +100,51 @@ describe('validateSubscriptionInput middleware', () => {
     });
     expect(next).not.toHaveBeenCalled();
   });
+
+  it('should return 400 if email is not a string', async () => {
+    req.body = {
+      email: 12345,
+      city: 'Kyiv',
+      frequency: 'daily',
+    };
+
+    await validateSubscriptionInput(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      error: true,
+      message: 'Invalid input',
+    });
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 if city is an empty string', async () => {
+    req.body = {
+      email: 'test@test.com',
+      city: '',
+      frequency: 'daily',
+    };
+
+    await validateSubscriptionInput(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      error: true,
+      message: 'Invalid input',
+    });
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('should validate email case-insensitively', async () => {
+    req.body = {
+      email: 'TEST@TEST.COM',
+      city: 'Kyiv',
+      frequency: 'daily',
+    };
+    validateCity.mockResolvedValue(true);
+
+    await validateSubscriptionInput(req, res, next);
+
+    expect(next).toHaveBeenCalled();
+  });
 });

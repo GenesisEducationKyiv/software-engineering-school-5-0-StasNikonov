@@ -1,7 +1,7 @@
-const WeatherEmailService = require('../../api/services/weatherEmailService');
+const WeatherEmailServiceTest = require('../../api/services/WeatherEmailService');
 const EmailAdapter = require('../../api/adapters/EmailAdapter');
 
-describe('WeatherEmailService', () => {
+describe('WeatherEmailServiceTest', () => {
   let dbMock;
   let weatherProviderMock;
   let emailAdapterMock;
@@ -28,7 +28,7 @@ describe('WeatherEmailService', () => {
       .mockClear()
       .mockResolvedValue();
 
-    service = new WeatherEmailService(
+    service = new WeatherEmailServiceTest(
       weatherProviderMock,
       emailAdapterMock,
       dbMock,
@@ -105,5 +105,34 @@ describe('WeatherEmailService', () => {
     );
 
     consoleSpy.mockRestore();
+  });
+
+  it('should send weather emails to multiple subscribers', async () => {
+    const subscribers = [
+      { email: 'user1@example.com', city: 'Kyiv', frequency: 'daily' },
+      { email: 'user2@example.com', city: 'Lviv', frequency: 'daily' },
+    ];
+
+    dbMock.getConfirmedByFrequency.mockResolvedValue(subscribers);
+    weatherProviderMock.getWeather.mockResolvedValue({ temp: 20 });
+
+    await service.sendEmails('daily');
+
+    expect(dbMock.getConfirmedByFrequency).toHaveBeenCalledWith('daily');
+    expect(weatherProviderMock.getWeather).toHaveBeenCalledTimes(2);
+    expect(weatherProviderMock.getWeather).toHaveBeenCalledWith('Kyiv');
+    expect(weatherProviderMock.getWeather).toHaveBeenCalledWith('Lviv');
+    expect(emailAdapterMock.sendWeatherEmail).toHaveBeenCalledTimes(2);
+  });
+
+  it('should fetch and send emails for hourly frequency', async () => {
+    dbMock.getConfirmedByFrequency.mockResolvedValue([mockSubscriber]);
+    weatherProviderMock.getWeather.mockResolvedValue({ temp: 18 });
+
+    await service.sendEmails('hourly');
+
+    expect(dbMock.getConfirmedByFrequency).toHaveBeenCalledWith('hourly');
+    expect(weatherProviderMock.getWeather).toHaveBeenCalledWith('Kyiv');
+    expect(emailAdapterMock.sendWeatherEmail).toHaveBeenCalled();
   });
 });
