@@ -34,4 +34,12 @@ describe('GET /confirm/:token', () => {
     expect(response.statusCode).toBe(404);
     expect(response.body.message).toMatch(/Token not found/i);
   });
+
+  it('should not confirm subscription again with the same token', async () => {
+    await request(app).get(`/api/confirm/${testToken}`);
+
+    const response = await request(app).get(`/api/confirm/${testToken}`);
+    expect(response.statusCode).toBe(409);
+    expect(response.body.message).toMatch(/Token not found|Already confirmed/i);
+  });
 });

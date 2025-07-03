@@ -67,4 +67,14 @@ test.describe('Форма підписки на прогноз погоди', ()
     await expect(message).toHaveText(/вже існує|exists/i, { timeout: 3000 });
     await expect(message).toHaveCSS('color', 'rgb(255, 0, 0)');
   });
+
+  test('should fail with unknown city', async ({ page }) => {
+    await page.fill('#email', `test${Date.now()}@example.com`);
+    await page.fill('#city', 'InvalidCity123');
+    await page.selectOption('#frequency', 'daily');
+    await page.click('button[type="submit"]');
+
+    const message = page.locator('#message');
+    await expect(message).toHaveText(/city not found/i, { timeout: 3000 });
+  });
 });
