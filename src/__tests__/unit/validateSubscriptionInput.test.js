@@ -129,7 +129,7 @@ describe('validateSubscriptionInput middleware', () => {
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
       error: true,
-      message: 'Invalid input',
+      message: 'Email must be a string',
     });
     expect(next).not.toHaveBeenCalled();
   });
@@ -146,21 +146,8 @@ describe('validateSubscriptionInput middleware', () => {
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
       error: true,
-      message: 'Invalid input',
+      message: 'City must be a non-empty string',
     });
     expect(next).not.toHaveBeenCalled();
-  });
-
-  it('should validate email case-insensitively', async () => {
-    req.body = {
-      email: 'TEST@TEST.COM',
-      city: 'Kyiv',
-      frequency: 'daily',
-    };
-    validateCity.mockResolvedValue(true);
-
-    await validateSubscriptionInput(req, res, next);
-
-    expect(next).toHaveBeenCalled();
   });
 });

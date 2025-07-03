@@ -10,6 +10,18 @@ const validateSubscriptionInput = async (req, res, next) => {
   try {
     const { email, city, frequency } = req.body;
 
+    if (typeof email !== 'string') {
+      return res
+        .status(400)
+        .json({ error: true, message: 'Email must be a string' });
+    }
+
+    if (typeof city !== 'string' || city.trim() === '') {
+      return res
+        .status(400)
+        .json({ error: true, message: 'City must be a non-empty string' });
+    }
+
     const fieldValidation = isValidFields(email, city, frequency);
     if (!fieldValidation.valid) {
       return res

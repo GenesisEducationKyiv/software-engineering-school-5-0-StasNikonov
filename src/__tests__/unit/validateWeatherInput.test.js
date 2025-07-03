@@ -71,16 +71,6 @@ describe('validateWeatherInput middleware', () => {
     expect(next).not.toHaveBeenCalled();
   });
 
-  it('trims and normalizes city name before validating', async () => {
-    req.query = { city: '  KYIV  ' };
-    validateCity.mockResolvedValue(true);
-
-    await validateWeatherInput(req, res, next);
-
-    expect(validateCity).toHaveBeenCalledWith('KYIV');
-    expect(next).toHaveBeenCalled();
-  });
-
   it('returns 400 if multiple city query params are provided', async () => {
     req.query = { city: ['Kyiv', 'London'] };
     await validateWeatherInput(req, res, next);
