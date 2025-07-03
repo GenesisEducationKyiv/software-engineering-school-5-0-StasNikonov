@@ -110,7 +110,7 @@ describe('Weather Subscription API', () => {
     });
 
     expect(response.statusCode).toBe(400);
-    expect(response.body.message).toMatch(/Invalid input/i);
+    expect(response.body.message).toMatch(/City must be a non-empty string/i);
   });
 
   it('should fail with invalid email', async () => {

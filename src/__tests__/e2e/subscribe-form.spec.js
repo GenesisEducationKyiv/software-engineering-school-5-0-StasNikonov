@@ -48,7 +48,9 @@ test.describe('Форма підписки на прогноз погоди', ()
     await page.click('button[type="submit"]');
 
     const message = page.locator('#message');
-    await expect(message).toHaveText(/Invalid input/i, { timeout: 3000 });
+    await expect(message).toHaveText(/City must be a non-empty string/i, {
+      timeout: 3000,
+    });
   });
 
   test('should fail with missing frequency', async ({ page }) => {
