@@ -32,6 +32,8 @@ class SubscriptionService {
   async confirm({ token }) {
     const subscription = await this.subscriptionRepository.findByToken(token);
     if (!subscription) return { status: 404, message: 'Token not found' };
+    if (subscription.confirmed)
+      return { status: 409, message: 'Already confirmed' };
 
     await this.subscriptionRepository.confirmSubscription(subscription);
     return { status: 200, message: 'Subscription confirmed successfully' };

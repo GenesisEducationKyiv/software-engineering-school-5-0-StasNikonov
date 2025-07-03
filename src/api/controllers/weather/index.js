@@ -11,4 +11,4 @@ const weatherController = new WeatherController(
   formatWeatherResponse,
 );
 
-module.exports = { weatherController };
+module.exports = weatherController;
