@@ -1,7 +1,12 @@
 const WeatherAPIProvider = require('../../providers/WeatherAPIProvider');
+const OpenWeatherMapProvider = require('../../providers/OpenWeatherMapProvider');
 const WeatherService = require('./WeatherService');
 
-const weatherProvider = new WeatherAPIProvider();
-const weatherService = new WeatherService(weatherProvider);
+const weatherAPIProvider = new WeatherAPIProvider();
+const openWeatherMapProvider = new OpenWeatherMapProvider();
+
+weatherAPIProvider.setNext(openWeatherMapProvider);
+
+const weatherService = new WeatherService(weatherAPIProvider);
 
 module.exports = weatherService;

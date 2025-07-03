@@ -19,7 +19,17 @@ docker-compose -f docker-compose.test.yml build
 
 ---
 
-## Step 2. Run tests
+## Step 2. Run migrations once
+
+Run the migration step to set up the test database schema:
+
+```bash
+docker-compose --env-file .env.test -f docker-compose.test.yml run --rm migrate
+```
+
+---
+
+## Step 3. Run tests
 
 - The project has npm scripts configured to run different types of tests inside Docker containers:
 
