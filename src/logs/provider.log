@@ -31,3 +31,9 @@ openweathermap.org/data - Response: {"main":{"temp":21,"humidity":70},"weather":
 openweathermap.org/geo - Response: [{"name":"Kyiv","lat":50.45,"lon":30.52}]
 openweathermap.org/data - Response: {"main":{"temp":21,"humidity":70},"weather":[{"description":"ясно"}]}
 weatherapi.com/v1/current.json - Response: {"location":{"name":"Kyiv"},"current":{"temp_c":18,"humidity":60,"condition":{"text":"Сонячно"}}}
+openweathermap.org/data - Response: {"main":{"temp":21,"humidity":70},"weather":[{"description":"ясно"}]}
+openweathermap.org/geo - Response: [{"name":"Kyiv","lat":50.45,"lon":30.52}]
+weatherapi.com/v1/current.json - Response: {"location":{"name":"Kyiv"},"current":{"temp_c":18,"humidity":60,"condition":{"text":"Сонячно"}}}
+openweathermap.org/geo - Response: [{"name":"Kyiv","lat":50.45,"lon":30.52}]
+openweathermap.org/data - Response: {"main":{"temp":21,"humidity":70},"weather":[{"description":"ясно"}]}
+weatherapi.com/v1/current.json - Response: {"location":{"name":"Kyiv"},"current":{"temp_c":18,"humidity":60,"condition":{"text":"Сонячно"}}}
