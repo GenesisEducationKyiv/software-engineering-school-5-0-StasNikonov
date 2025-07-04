@@ -1,14 +1,19 @@
 const request = require('supertest');
 const app = require('../../../app');
 const axios = require('axios');
+const redisClient = require('../../utils/redisClient');
 
 jest.mock('axios');
+jest.mock('../../utils/redisClient');
 
 describe('GET /api/weather', () => {
   const city = 'Kyiv';
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    redisClient.get.mockResolvedValue(null);
+    redisClient.setEx.mockResolvedValue('OK');
 
     global.fetch = jest.fn((url) => {
       if (url.includes('weatherapi.com/v1/search.json')) {
@@ -66,11 +71,40 @@ describe('GET /api/weather', () => {
           },
         });
       }
-
       return Promise.reject(new Error('Unexpected axios call'));
     });
 
     const response = await request(app).get(`/api/weather?city=${city}`);
+
+    expect(redisClient.get).toHaveBeenCalledWith(`weather:kyiv`);
+    expect(redisClient.setEx).toHaveBeenCalled();
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toEqual({
+      message: 'Weather forecast for Kyiv',
+      temperature: '18°C',
+      humidity: '55%',
+      description: 'Місцями дощ',
+    });
+  });
+
+  it('should return cached data when present in Redis cache', async () => {
+    redisClient.get.mockResolvedValue(
+      JSON.stringify({
+        message: 'Weather forecast for Kyiv',
+        temperature: '18',
+        humidity: '55',
+        description: 'Місцями дощ',
+        city: 'Kyiv',
+      }),
+    );
+
+    axios.get.mockClear();
+
+    const response = await request(app).get(`/api/weather?city=${city}`);
+
+    expect(redisClient.get).toHaveBeenCalledWith(`weather:kyiv`);
+    expect(redisClient.setEx).not.toHaveBeenCalled();
 
     expect(response.statusCode).toBe(200);
     expect(response.body).toEqual({
@@ -82,6 +116,8 @@ describe('GET /api/weather', () => {
   });
 
   it('should return 404 if city is invalid in both providers', async () => {
+    redisClient.get.mockResolvedValue(null);
+
     global.fetch.mockImplementation(() =>
       Promise.resolve({
         ok: true,
@@ -91,12 +127,17 @@ describe('GET /api/weather', () => {
 
     const response = await request(app).get('/api/weather?city=UnknownCity');
 
+    expect(redisClient.setEx).not.toHaveBeenCalled();
+
     expect(response.statusCode).toBe(404);
     expect(response.body.message).toMatch(/city not found/i);
   });
 
   it('should return 400 if city query parameter is missing', async () => {
     const response = await request(app).get('/api/weather');
+
+    expect(redisClient.get).not.toHaveBeenCalled();
+    expect(redisClient.setEx).not.toHaveBeenCalled();
 
     expect(response.statusCode).toBe(400);
     expect(response.body.message).toMatch(/city parameter is required/i);
