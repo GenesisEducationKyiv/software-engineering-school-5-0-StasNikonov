@@ -1,130 +1,34 @@
 const {
-  validateSubscriptionInput,
-} = require('../../../src/api/middlewares/validateSubscriptionInput');
-const validators = require('../../../src/utils/validators/validateSubscriptionFields');
-const cityValidator = require('../../api/services/cityValidation/cityValidator');
+  createValidateSubscriptionInput,
+} = require('../../../src/api/presentation/middlewares/createValidateSubscriptionInput');
 
-jest.mock('../../../src/utils/validators/validateSubscriptionFields');
-jest.mock('../../../src/api/services/cityValidation/cityValidator');
+describe('createValidateSubscriptionInput middleware', () => {
+  const mockIsValidEmail = jest.fn();
+  const mockValidateCity = jest.fn();
+  const next = jest.fn();
 
-describe('validateSubscriptionInput middleware', () => {
-  let req, res, next;
+  let middleware;
 
   beforeEach(() => {
-    req = {
-      body: {
-        email: 'test@example.com',
-        city: 'Kyiv',
-        frequency: 'daily',
-      },
-    };
-
-    res = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn(),
-    };
-
-    next = jest.fn();
-
     jest.clearAllMocks();
+    middleware = createValidateSubscriptionInput(
+      mockValidateCity,
+      mockIsValidEmail,
+    );
   });
 
-  it('should call next() if input is valid', async () => {
-    validators.isValidFields.mockReturnValue({ valid: true });
-    validators.isValidEmail.mockReturnValue(true);
-    cityValidator.createValidator.mockReturnValue(() => Promise.resolve(true));
+  const createMockResponse = () => {
+    const res = {};
+    res.status = jest.fn().mockReturnValue(res);
+    res.json = jest.fn().mockReturnValue(res);
+    return res;
+  };
 
-    await validateSubscriptionInput(req, res, next);
+  test('should reject if email is not a string', async () => {
+    const req = { body: { email: 123, city: 'Kyiv', frequency: 'daily' } };
+    const res = createMockResponse();
 
-    expect(next).toHaveBeenCalled();
-    expect(res.status).not.toHaveBeenCalled();
-  });
-
-  it('should return 400 if required fields are missing or invalid', async () => {
-    validators.isValidFields.mockReturnValue({
-      valid: false,
-      status: 400,
-      message: 'Missing fields',
-    });
-
-    await validateSubscriptionInput(req, res, next);
-
-    expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({
-      error: true,
-      message: 'Missing fields',
-    });
-    expect(next).not.toHaveBeenCalled();
-  });
-
-  it('should return 400 if email is invalid', async () => {
-    validators.isValidFields.mockReturnValue({ valid: true });
-    validators.isValidEmail.mockReturnValue(false);
-
-    await validateSubscriptionInput(req, res, next);
-
-    expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({
-      error: true,
-      message: 'Invalid email format',
-    });
-    expect(next).not.toHaveBeenCalled();
-  });
-
-  it('should return 400 if frequency is invalid', async () => {
-    validators.isValidFields.mockReturnValue({ valid: true });
-    validators.isValidEmail.mockReturnValue(true);
-
-    req.body.frequency = 'weekly';
-
-    await validateSubscriptionInput(req, res, next);
-
-    expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({
-      error: true,
-      message: 'Invalid frequency value',
-    });
-    expect(next).not.toHaveBeenCalled();
-  });
-
-  it('should return 404 if city is invalid', async () => {
-    validators.isValidFields.mockReturnValue({ valid: true });
-    validators.isValidEmail.mockReturnValue(true);
-    cityValidator.createValidator.mockReturnValue(() => Promise.resolve(false));
-
-    await validateSubscriptionInput(req, res, next);
-
-    expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({
-      error: true,
-      message: 'City not found',
-    });
-    expect(next).not.toHaveBeenCalled();
-  });
-
-  it('should return 500 on internal error', async () => {
-    validators.isValidFields.mockImplementation(() => {
-      throw new Error('Boom!');
-    });
-
-    await validateSubscriptionInput(req, res, next);
-
-    expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.json).toHaveBeenCalledWith({
-      error: true,
-      message: 'Internal Server Error',
-    });
-    expect(next).not.toHaveBeenCalled();
-  });
-
-  it('should return 400 if email is not a string', async () => {
-    req.body = {
-      email: 12345,
-      city: 'Kyiv',
-      frequency: 'daily',
-    };
-
-    await validateSubscriptionInput(req, res, next);
+    await middleware(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
@@ -134,14 +38,13 @@ describe('validateSubscriptionInput middleware', () => {
     expect(next).not.toHaveBeenCalled();
   });
 
-  it('should return 400 if city is an empty string', async () => {
-    req.body = {
-      email: 'test@test.com',
-      city: '',
-      frequency: 'daily',
+  test('should reject if city is an empty string', async () => {
+    const req = {
+      body: { email: 'test@example.com', city: '', frequency: 'daily' },
     };
+    const res = createMockResponse();
 
-    await validateSubscriptionInput(req, res, next);
+    await middleware(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
@@ -149,5 +52,72 @@ describe('validateSubscriptionInput middleware', () => {
       message: 'City must be a non-empty string',
     });
     expect(next).not.toHaveBeenCalled();
+  });
+
+  test('should reject if email is invalid', async () => {
+    mockIsValidEmail.mockReturnValue(false);
+    const req = {
+      body: { email: 'invalid-email', city: 'Kyiv', frequency: 'daily' },
+    };
+    const res = createMockResponse();
+
+    await middleware(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      error: true,
+      message: 'Invalid email format',
+    });
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  test('should reject if frequency is invalid', async () => {
+    mockIsValidEmail.mockReturnValue(true);
+    const req = {
+      body: { email: 'test@example.com', city: 'Kyiv', frequency: 'weekly' },
+    };
+    const res = createMockResponse();
+
+    await middleware(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      error: true,
+      message: 'Invalid frequency value',
+    });
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  test('should reject if city validation fails', async () => {
+    mockIsValidEmail.mockReturnValue(true);
+    mockValidateCity.mockResolvedValue(false);
+    const req = {
+      body: { email: 'test@example.com', city: 'Atlantis', frequency: 'daily' },
+    };
+    const res = createMockResponse();
+
+    await middleware(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({
+      error: true,
+      message: 'City not found',
+    });
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  test('should call next() if all input is valid', async () => {
+    mockIsValidEmail.mockReturnValue(true);
+    mockValidateCity.mockResolvedValue(true);
+    const req = {
+      body: { email: 'test@example.com', city: 'Kyiv', frequency: 'hourly' },
+    };
+    const res = createMockResponse();
+
+    await middleware(req, res, next);
+
+    expect(next).toHaveBeenCalled();
+    expect(res.status).not.toHaveBeenCalled();
+    expect(res.json).not.toHaveBeenCalled();
   });
 });

@@ -1,0 +1,28 @@
+const AbstractCityValidator = require('../../domain/validation/AbstractCityValidator');
+
+class OpenWeatherCityValidator extends AbstractCityValidator {
+  async validateCity(city) {
+    const apiKey = process.env.OWM_API_KEY;
+    const url = `http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${apiKey}`;
+
+    try {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        console.warn(`OpenWeatherMap returned status ${response.status}`);
+        return false;
+      }
+
+      const data = await response.json();
+
+      if (!Array.isArray(data) || data.length === 0) return false;
+
+      return true;
+    } catch (error) {
+      console.error('OpenWeatherMap validation error:', error.message);
+      return false;
+    }
+  }
+}
+
+module.exports = OpenWeatherCityValidator;

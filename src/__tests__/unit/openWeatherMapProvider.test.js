@@ -1,5 +1,5 @@
 const axios = require('axios');
-const OpenWeatherMapProvider = require('../../../src/api/providers/OpenWeatherMapProvider');
+const OpenWeatherMapProvider = require('../../api/infrastructure/providers/OpenWeatherMapProvider');
 
 jest.mock('axios');
 

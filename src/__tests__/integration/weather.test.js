@@ -1,10 +1,10 @@
 const request = require('supertest');
 const app = require('../../../app');
 const axios = require('axios');
-const redisClient = require('../../utils/redisClient');
+const redisClient = require('../../api/infrastructure/cache/redisClient');
 
 jest.mock('axios');
-jest.mock('../../utils/redisClient');
+jest.mock('../../api/infrastructure/cache/redisClient');
 
 describe('GET /api/weather', () => {
   const city = 'Kyiv';

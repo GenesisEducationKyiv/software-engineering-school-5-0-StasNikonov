@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const subscriptionController = require('../controllers/subscription/index');
-const {
-  validateSubscriptionInput,
-} = require('../middlewares/validateSubscriptionInput');
+const subscriptionController = require('../infrastructure/compositionRoot/subscriptionController');
+const validateSubscriptionInput = require('../infrastructure/compositionRoot/validateSubscriptionInput');
 
 router.post(
   '/subscribe',

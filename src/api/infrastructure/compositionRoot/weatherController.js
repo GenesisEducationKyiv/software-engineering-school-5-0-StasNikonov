@@ -1,0 +1,10 @@
+const WeatherController = require('../../presentation/controllers/weather/WeatherController');
+const weatherService = require('./weatherService');
+const formatWeatherResponse = require('../../domain/formatters/formatWeatherResponse');
+
+const weatherController = new WeatherController(
+  weatherService,
+  formatWeatherResponse,
+);
+
+module.exports = weatherController;

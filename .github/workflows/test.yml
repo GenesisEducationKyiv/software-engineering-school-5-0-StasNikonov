@@ -17,8 +17,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Start database
-        run: docker compose --env-file .env.test -f docker-compose.test.yml up -d test_db
+      - name: Start database and redis
+        run: docker compose --env-file .env.test -f docker-compose.test.yml up -d test_db test_redis
 
       - name: Run DB migrations
         run: docker compose --env-file .env.test -f docker-compose.test.yml run --rm test_runner npx sequelize-cli db:migrate --config src/db/config/config.js
@@ -30,6 +30,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      - name: Start redis
+        run: docker compose --env-file .env.test -f docker-compose.test.yml up -d test_redis
 
       - name: Run E2E Tests
         run: docker compose --env-file .env.test -f docker-compose.test.yml run --rm playwright_runner npm run test:e2e
