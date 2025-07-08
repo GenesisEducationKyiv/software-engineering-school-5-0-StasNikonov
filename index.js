@@ -1,7 +1,7 @@
 require('dotenv').config();
 const app = require('./app');
 const { connectDatabase } = require('./src/db/config/db');
-require('./src/api/infrastructure/compositionRoot/cronHandler');
+require('./src/api/infrastructure/compositionRoot/schedulers/cronHandler');
 
 const PORT = process.env.PORT || 3000;
 
