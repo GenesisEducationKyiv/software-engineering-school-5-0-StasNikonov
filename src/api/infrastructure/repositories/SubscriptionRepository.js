@@ -1,6 +1,7 @@
 const { Subscription } = require('../../../db/models');
+const ISubscriptionRepository = require('../../domain/repositories/ISubscriptionRepository');
 
-class SubscriptionRepository {
+class SubscriptionRepository extends ISubscriptionRepository {
   findSubscription = (email, city) => {
     return Subscription.findOne({ where: { email, city } });
   };

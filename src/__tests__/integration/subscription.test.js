@@ -1,4 +1,4 @@
-jest.mock('../../api/infrastructure/nodmailerClient/nodemailerClient');
+jest.mock('../../api/infrastructure/providers/NodemailerProvider');
 jest.mock('axios');
 
 const axios = require('axios');

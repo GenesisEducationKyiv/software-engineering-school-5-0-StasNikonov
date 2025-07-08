@@ -1,4 +1,4 @@
-class CronWeatherHandler {
+class CronWeatherEmailHandler {
   constructor(weatherEmailService) {
     this.weatherEmailService = weatherEmailService;
   }
@@ -14,4 +14,4 @@ class CronWeatherHandler {
   };
 }
 
-module.exports = CronWeatherHandler;
+module.exports = CronWeatherEmailHandler;

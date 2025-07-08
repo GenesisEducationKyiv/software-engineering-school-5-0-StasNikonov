@@ -1,5 +1,5 @@
 const cron = require('node-cron');
-const CronWeatherHandler = require('../../../presentation/controllers/cron/CronWeatherHandler');
+const CronWeatherHandler = require('../../../presentation/controllers/cron/CronWeatherEmailHandler');
 
 const subscriptionRepository = require('../../repositories/SubscriptionRepository');
 const WeatherService = require('../services/weatherService');
