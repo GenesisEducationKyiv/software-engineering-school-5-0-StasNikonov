@@ -51,6 +51,19 @@ describe('GET /weather', () => {
     });
   });
 
+  it('should return 404 if city is not found by provider', async () => {
+    WeatherAPIProvider.prototype.fetch.mockImplementationOnce(() => {
+      const err = new Error('City not found');
+      err.code = 404;
+      throw err;
+    });
+
+    const response = await request(app).get('/weather?city=UnknownCity');
+
+    expect(response.statusCode).toBe(404);
+    expect(response.body).toHaveProperty('message', 'City not found');
+  });
+
   it('should return 400 if city is missing', async () => {
     const response = await request(app).get('/weather');
 
@@ -58,7 +71,7 @@ describe('GET /weather', () => {
     expect(response.body).toHaveProperty('message');
   });
 
-  it('should return 500 if weather API fetch throws error', async () => {
+  it('should return 404 if weather API fetch throws error', async () => {
     WeatherAPIProvider.prototype.fetch.mockImplementationOnce(() => {
       throw new Error('Weather API request failed');
     });

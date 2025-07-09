@@ -147,4 +147,20 @@ describe('validateSubscriptionInput middleware', () => {
 
     expect(next).toHaveBeenCalled();
   });
+
+  it('should return 400 if city is an object', async () => {
+    req.body = {
+      email: 'test@test.com',
+      city: { name: 'Kyiv' },
+      frequency: 'daily',
+    };
+
+    await validateSubscriptionInput(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      error: true,
+      message: 'Invalid input',
+    });
+  });
 });

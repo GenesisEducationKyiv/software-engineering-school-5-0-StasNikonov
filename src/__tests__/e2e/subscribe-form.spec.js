@@ -72,3 +72,45 @@ test.describe('Форма підписки на прогноз погоди', ()
     });
   });
 });
+
+test.describe('Subscription form - backend integration', () => {
+  const email = 'duplicate@example.com'; // змінюй, якщо бекенд вимагає унікальності
+  const city = 'Kyiv';
+  const frequency = 'daily';
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto('http://localhost:3000/subscribe.html');
+  });
+
+  test('Should subscribe once and fail on duplicate', async ({ page }) => {
+    await page.fill('#email', email);
+    await page.fill('#city', city);
+    await page.selectOption('#frequency', frequency);
+    await page.click('button[type="submit"]');
+
+    const message = page.locator('#message');
+    await expect(message).toHaveText(/confirmation email sent/i, {
+      timeout: 3000,
+    });
+
+    await page.fill('#email', email);
+    await page.fill('#city', city);
+    await page.selectOption('#frequency', frequency);
+    await page.click('button[type="submit"]');
+
+    const duplicateMessage = page.locator('#message');
+    await expect(duplicateMessage).toHaveText(/Email already exists/i, {
+      timeout: 3000,
+    });
+  });
+
+  test('Should fail on invalid city', async ({ page }) => {
+    await page.fill('#email', 'invalidcity@example.com');
+    await page.fill('#city', 'InvalidCityName123');
+    await page.selectOption('#frequency', 'daily');
+    await page.click('button[type="submit"]');
+
+    const message = page.locator('#message');
+    await expect(message).toHaveText(/City not found/i, { timeout: 3000 });
+  });
+});

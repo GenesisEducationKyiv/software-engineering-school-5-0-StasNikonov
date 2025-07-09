@@ -24,6 +24,10 @@ describe('SubscriptionService', () => {
     );
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe('subscribe', () => {
     it('should return 409 if subscription already exists', async () => {
       subscriptionRepository.findSubscription.mockResolvedValue({ id: 1 });
@@ -38,10 +42,38 @@ describe('SubscriptionService', () => {
       expect(result.message).toBe('Email already exists');
     });
 
-    it('should create subscription and send email if not exists', async () => {
+    it.each(['daily', 'hourly'])(
+      'should create subscription and send email if not exists (frequency: %s)',
+      async (frequency) => {
+        subscriptionRepository.findSubscription.mockResolvedValue(null);
+        subscriptionRepository.createSubscription.mockResolvedValue({});
+        emailAdapter.sendConfirmationEmail.mockResolvedValue();
+
+        const result = await subscriptionService.subscribe({
+          email: 'test@example.com',
+          city: 'Kyiv',
+          frequency,
+        });
+
+        expect(subscriptionRepository.createSubscription).toHaveBeenCalledWith(
+          expect.objectContaining({
+            email: 'test@example.com',
+            city: 'Kyiv',
+            frequency,
+            token: expect.any(String),
+          }),
+        );
+        expect(emailAdapter.sendConfirmationEmail).toHaveBeenCalled();
+        expect(result.status).toBe(200);
+      },
+    );
+
+    it('should return 500 if sending email fails', async () => {
       subscriptionRepository.findSubscription.mockResolvedValue(null);
       subscriptionRepository.createSubscription.mockResolvedValue({});
-      emailAdapter.sendConfirmationEmail.mockResolvedValue();
+      emailAdapter.sendConfirmationEmail.mockRejectedValue(
+        new Error('Email failed'),
+      );
 
       const result = await subscriptionService.subscribe({
         email: 'test@example.com',
@@ -49,16 +81,8 @@ describe('SubscriptionService', () => {
         frequency: 'daily',
       });
 
-      expect(subscriptionRepository.createSubscription).toHaveBeenCalledWith(
-        expect.objectContaining({
-          email: 'test@example.com',
-          city: 'Kyiv',
-          frequency: 'daily',
-          token: expect.any(String),
-        }),
-      );
-      expect(emailAdapter.sendConfirmationEmail).toHaveBeenCalled();
-      expect(result.status).toBe(200);
+      expect(result.status).toBe(500);
+      expect(result.message).toBe('Failed to send confirmation email');
     });
   });
 
