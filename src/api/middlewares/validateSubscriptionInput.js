@@ -16,6 +16,11 @@ const validateSubscriptionInput = async (req, res, next) => {
       req.body.city = city;
     }
 
+    console.log(
+      'Received city in subscription:',
+      JSON.stringify(req.body.city),
+    );
+
     const fieldValidation = isValidFields(email, city, frequency);
     if (!fieldValidation.valid) {
       return res

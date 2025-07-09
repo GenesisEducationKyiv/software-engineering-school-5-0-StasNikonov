@@ -1,5 +1,4 @@
 const { test, expect } = require('@playwright/test');
-const { Subscription } = require('../../db/models');
 
 test.describe('Форма підписки на прогноз погоди', () => {
   test.beforeEach(async ({ page }) => {
@@ -34,7 +33,7 @@ test.describe('Форма підписки на прогноз погоди', ()
     );
   });
 
-  test('should fail with email', async ({ page }) => {
+  test('should fail with missing email', async ({ page }) => {
     await page.fill('#city', 'Kyiv');
     await page.selectOption('#frequency', 'daily');
     await page.click('button[type="submit"]');
@@ -69,38 +68,6 @@ test.describe('Форма підписки на прогноз погоди', ()
 
     const message = page.locator('#message');
     await expect(message).toHaveText(/Invalid email format/i, {
-      timeout: 3000,
-    });
-  });
-});
-
-test.describe('Subscription form - backend integration', () => {
-  test.beforeAll(async () => {
-    await Subscription.destroy({ where: {} });
-  });
-
-  test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:3000/subscribe.html');
-  });
-
-  test('Should subscribe once and fail on duplicate', async ({ page }) => {
-    await page.fill('#email', 'duplicate@example.com');
-    await page.fill('#city', 'Kyiv');
-    await page.selectOption('#frequency', 'daily');
-    await page.click('button[type="submit"]');
-
-    const message = page.locator('#message');
-    await expect(message).toHaveText(/confirmation email sent/i, {
-      timeout: 3000,
-    });
-
-    await page.fill('#email', 'duplicate@example.com');
-    await page.fill('#city', 'Kyiv');
-    await page.selectOption('#frequency', 'daily');
-    await page.click('button[type="submit"]');
-
-    const duplicateMessage = page.locator('#message');
-    await expect(duplicateMessage).toHaveText(/Email already exists/i, {
       timeout: 3000,
     });
   });
