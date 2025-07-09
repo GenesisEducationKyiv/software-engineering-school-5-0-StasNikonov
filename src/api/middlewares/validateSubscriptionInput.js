@@ -8,7 +8,13 @@ const allowedFrequencies = ['hourly', 'daily'];
 
 const validateSubscriptionInput = async (req, res, next) => {
   try {
-    const { email, city, frequency } = req.body;
+    let { email, city, frequency } = req.body;
+
+    if (typeof city === 'string') {
+      city = city.trim().toLowerCase();
+      city = city.charAt(0).toUpperCase() + city.slice(1);
+      req.body.city = city;
+    }
 
     const fieldValidation = isValidFields(email, city, frequency);
     if (!fieldValidation.valid) {

@@ -74,18 +74,14 @@ test.describe('Форма підписки на прогноз погоди', ()
 });
 
 test.describe('Subscription form - backend integration', () => {
-  const email = 'duplicate@example.com'; // змінюй, якщо бекенд вимагає унікальності
-  const city = 'Kyiv';
-  const frequency = 'daily';
-
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:3000/subscribe.html');
   });
 
   test('Should subscribe once and fail on duplicate', async ({ page }) => {
-    await page.fill('#email', email);
-    await page.fill('#city', city);
-    await page.selectOption('#frequency', frequency);
+    await page.fill('#email', 'duplicate@example.com');
+    await page.fill('#city', 'Kyiv');
+    await page.selectOption('#frequency', 'daily');
     await page.click('button[type="submit"]');
 
     const message = page.locator('#message');
@@ -93,9 +89,9 @@ test.describe('Subscription form - backend integration', () => {
       timeout: 3000,
     });
 
-    await page.fill('#email', email);
-    await page.fill('#city', city);
-    await page.selectOption('#frequency', frequency);
+    await page.fill('#email', 'duplicate@example.com');
+    await page.fill('#city', 'Kyiv');
+    await page.selectOption('#frequency', 'daily');
     await page.click('button[type="submit"]');
 
     const duplicateMessage = page.locator('#message');
