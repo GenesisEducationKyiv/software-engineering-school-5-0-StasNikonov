@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { Subscription } = require('../../db/models');
 
 test.describe('Форма підписки на прогноз погоди', () => {
   test.beforeEach(async ({ page }) => {
@@ -74,6 +75,10 @@ test.describe('Форма підписки на прогноз погоди', ()
 });
 
 test.describe('Subscription form - backend integration', () => {
+  test.beforeAll(async () => {
+    await Subscription.destroy({ where: {} });
+  });
+
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:3000/subscribe.html');
   });
