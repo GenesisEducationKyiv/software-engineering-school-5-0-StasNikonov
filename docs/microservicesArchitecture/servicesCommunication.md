@@ -6,7 +6,7 @@ This document outlines the proposed microservices architecture for the existing 
 
 ---
 
-## 🧱 Microservices Breakdown
+## Microservices Breakdown
 
 The monolith will be decomposed into the following independent microservices:
 
@@ -39,37 +39,32 @@ The monolith will be decomposed into the following independent microservices:
 - **Responsibility:**
     - Sends confirmation, forecast, and unsubscribe emails.
     - Supports email templates.
-    - May handle background jobs or delayed sending.
+    - Initiates scheduled forecast email sending (cron jobs).
+- **Dependencies:**
+    - External email providers (via SMTP)
 - **Interface:** gRPC (called by Subscription & Weather services)
 
 ---
 
-### 5. **Scheduler Service**
-- **Responsibility:**
-    - Triggers scheduled jobs (daily/weekly forecast emails).
-- **Interface:** gRPC
-
----
-
-## 🔗 Communication Strategy
+## Communication Strategy
 
 The optimal communication methods between services are as follows:
 
-| Source                | Destination         | Purpose                                                     | Protocol / Method     |
-|-----------------------|---------------------|-------------------------------------------------------------|------------------------|
-| Client                | API Gateway         | Entry point for HTTP requests                               | **HTTP REST**          |
-| API Gateway           | Subscription Service| Manage user subscriptions                                   | **gRPC**               |
-| API Gateway           | Weather Service     | Fetch weather info                                          | **gRPC**               |
-| Subscription  service | Email Service       | Send confirmation or unsubscribe email                      | **gRPC**               |
-| Subscription service  | Email Service       | Validates the user-provided city by requesting weather data | **gRPC**               |
-| Weather Service       | External API        | Get weather forecast data                                   | **HTTP**               |
-| Weather Service       | Redis               | Read/write cached weather data                              | **TCP / Redis client** |
-| Weather Service       | Email Service       | Send weather forecast to users                              | **gRPC**               |
-| Scheduler Service     | Email Service       | Initiate forecast email dispatch                            | **gRPC**               |
+| Source                | Destination           | Purpose                                                     | Protocol / Method      |
+|-----------------------|-----------------------|-------------------------------------------------------------|------------------------|
+| Client                | API Gateway           | Entry point for HTTP requests                               | **HTTP REST**          |
+| API Gateway           | Subscription Service  | Manage user subscriptions                                   | **gRPC**               |
+| API Gateway           | Weather Service       | Fetch weather info                                          | **gRPC**               |
+| Subscription  service | Email Service         | Send confirmation or unsubscribe email                      | **gRPC**               |
+| Subscription service  | Weather Service       | Validates the user-provided city by requesting weather data | **gRPC**               |
+| Weather Service       | External API          | Get weather forecast data                                   | **HTTP**               |
+| Weather Service       | Redis                 | Read/write cached weather data                              | **TCP / Redis client** |
+| Email Service         | Subscription Service  | Get confirmed subscribers for forecast emails               | **gRPC**               |
+| Email Service         | Weather Service       | Get weather data for each subscriber's city                 | **gRPC**               |
 
 ---
 
-## 🧠 Diagram Reference
+## Diagram Reference
 
 The following diagram illustrates the overall architecture and communication flow:
 ![ServiceCommunication](ServicesCommunication.png)
