@@ -1,4 +1,4 @@
-class AbstractWeatherProvider {
+class IWeatherProvider {
   setNext(provider) {
     this.next = provider;
     return provider;
@@ -10,4 +10,4 @@ class AbstractWeatherProvider {
   }
 }
 
-module.exports = AbstractWeatherProvider;
+module.exports = IWeatherProvider;

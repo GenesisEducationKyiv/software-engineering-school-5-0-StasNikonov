@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer');
-const EmailProvider = require('../../domain/providers/EmailProvider');
+const EmailProvider = require('../../domain/providers/IEmailProvider');
 
 class NodemailerProvider extends EmailProvider {
   constructor() {

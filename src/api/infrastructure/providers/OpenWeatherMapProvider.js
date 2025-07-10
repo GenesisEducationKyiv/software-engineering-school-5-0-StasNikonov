@@ -1,5 +1,5 @@
 const axios = require('axios');
-const AbstractWeatherProvider = require('../../domain/providers/AbstractWeatherProvider');
+const AbstractWeatherProvider = require('../../domain/providers/IWeatherProvider');
 const logProviderResponse = require('../logging/logProviderResponse');
 
 class OpenWeatherMapProvider extends AbstractWeatherProvider {
