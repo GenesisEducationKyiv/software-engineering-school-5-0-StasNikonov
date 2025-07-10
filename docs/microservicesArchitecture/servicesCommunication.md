@@ -72,5 +72,5 @@ The optimal communication methods between services are as follows:
 ## 🧠 Diagram Reference
 
 The following diagram illustrates the overall architecture and communication flow:
-![ServiceCommunication](ServiceCommunication.png)
+![ServiceCommunication](ServicesCommunication.png)
 
