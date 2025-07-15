@@ -1,4 +1,4 @@
-class AbstractCityValidator {
+class ICityValidator {
   setNext(provider) {
     this.next = provider;
     return provider;
@@ -9,4 +9,4 @@ class AbstractCityValidator {
     throw new Error('validateCity(city) not implemented');
   }
 }
-module.exports = AbstractCityValidator;
+module.exports = ICityValidator;

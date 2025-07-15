@@ -1,6 +1,6 @@
 class WeatherEmailService {
-  constructor(weatherProvider, emailAdapter, subscriptionRepository) {
-    this.weatherProvider = weatherProvider;
+  constructor(weatherClient, emailAdapter, subscriptionRepository) {
+    this.weatherClient = weatherClient;
     this.emailAdapter = emailAdapter;
     this.subscriptionRepository = subscriptionRepository;
   }
@@ -12,9 +12,15 @@ class WeatherEmailService {
 
       for (let subscriber of subscribers) {
         try {
-          const weather = await this.weatherProvider.getWeather(
-            subscriber.city,
-          );
+          const weather = await new Promise((resolve, reject) => {
+            this.weatherClient.GetCurrentWeather(
+              { city: subscriber.city },
+              (err, response) => {
+                if (err) return reject(err);
+                resolve(response);
+              },
+            );
+          });
           await this.emailAdapter.sendWeatherEmail(subscriber, weather);
         } catch (err) {
           console.error(

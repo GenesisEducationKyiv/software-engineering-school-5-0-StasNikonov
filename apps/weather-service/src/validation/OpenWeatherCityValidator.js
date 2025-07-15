@@ -1,6 +1,6 @@
-const AbstractCityValidator = require('../../domain/validation/AbstractCityValidator');
+const ICityValidator = require('./ICityValidator');
 
-class OpenWeatherCityValidator extends AbstractCityValidator {
+class OpenWeatherCityValidator extends ICityValidator {
   async validateCity(city) {
     const apiKey = process.env.OWM_API_KEY;
     const url = `http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${apiKey}`;

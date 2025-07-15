@@ -1,7 +1,6 @@
 const express = require('express');
 const client = require('prom-client');
 const subscriptionRoutes = require('./src/api/routes/subscription');
-const weatherRoutes = require('./src/api/routes/weather');
 const { join } = require('node:path');
 
 const app = express();
@@ -11,7 +10,6 @@ app.use(express.json());
 const register = client.register;
 
 app.use('/api', subscriptionRoutes);
-app.use('/api', weatherRoutes);
 app.get('/api/metrics', async (req, res) => {
   try {
     res.set('Content-Type', register.contentType);
