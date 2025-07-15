@@ -1,5 +1,4 @@
 const express = require('express');
-const client = require('prom-client');
 const subscriptionRoutes = require('./src/api/routes/subscription');
 const { join } = require('node:path');
 
