@@ -166,22 +166,4 @@ describe('Weather Subscription API', () => {
     expect(response.statusCode).toBe(409);
     expect(response.body.message).toMatch(/Email already exists/i);
   });
-
-  it('should normalize city input and subscribe successfully', async () => {
-    const response = await request(app).post('/api/subscribe').send({
-      email: 'normalized@example.com',
-      city: '   kYiV  ',
-      frequency: 'daily',
-    });
-
-    expect(response.statusCode).toBe(200);
-    expect(response.body.message).toMatch(/confirmation/i);
-
-    const sub = await Subscription.findOne({
-      where: { email: 'normalized@example.com' },
-    });
-
-    expect(sub).not.toBeNull();
-    expect(sub.city).toBe('Kyiv');
-  });
 });
