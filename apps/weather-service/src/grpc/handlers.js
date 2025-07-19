@@ -15,7 +15,7 @@ function validateCity(weatherService) {
       .validateCity(city)
       .then((isValid) => callback(null, { isValid }))
       .catch((error) => {
-        console.error('❌ validateCity error:', error.message);
+        console.error('ValidateCity error:', error.message);
         callback(null, { isValid: false });
       });
   };

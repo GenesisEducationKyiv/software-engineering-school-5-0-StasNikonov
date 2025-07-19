@@ -1,6 +1,8 @@
 require('dotenv').config();
 const { createClient } = require('redis');
 
+console.log('REDIS_HOST:', process.env.REDIS_HOST);
+
 const redisClient = createClient({
   socket: {
     host: process.env.REDIS_HOST || '127.0.0.1',
@@ -14,7 +16,7 @@ redisClient.on('error', (err) => console.error('Redis Client Error', err));
   try {
     await redisClient.connect();
   } catch (error) {
-    console.error('❌ Redis connection failed:', error);
+    console.error('Redis connection failed:', error);
   }
 })();
 

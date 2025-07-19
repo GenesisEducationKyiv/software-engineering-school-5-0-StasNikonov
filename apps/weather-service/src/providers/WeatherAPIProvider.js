@@ -5,7 +5,8 @@ const logProviderResponse = require('../logging/logProviderResponse');
 class WeatherAPIProvider extends IWeatherProvider {
   async fetch(city) {
     const apiKey = process.env.WEATHER_API_KEY;
-    const url = `http://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${city}&lang=uk`;
+    const apiUrl = process.env.WEATHER_API_BASE_URL;
+    const url = `${apiUrl}/current.json?key=${apiKey}&q=${city}&lang=uk`;
     try {
       const response = await axios.get(url);
 
@@ -19,7 +20,7 @@ class WeatherAPIProvider extends IWeatherProvider {
         city: data.location.name,
       };
     } catch (error) {
-      console.error('❌ WeatherAPI error:', error.message);
+      console.error('WeatherAPI error:', error.message);
       if (this.next) {
         return this.next.fetch(city);
       }

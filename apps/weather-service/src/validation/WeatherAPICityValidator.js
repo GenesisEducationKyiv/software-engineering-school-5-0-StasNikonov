@@ -3,7 +3,8 @@ const ICityValidator = require('./ICityValidator');
 class WeatherAPICityValidator extends ICityValidator {
   async validateCity(city) {
     const apiKey = process.env.WEATHER_API_KEY;
-    const url = `http://api.weatherapi.com/v1/search.json?key=${apiKey}&q=${city}`;
+    const apiUrl = process.env.WEATHER_API_BASE_URL;
+    const url = `${apiUrl}/search.json?key=${apiKey}&q=${city}`;
 
     try {
       const response = await fetch(url);

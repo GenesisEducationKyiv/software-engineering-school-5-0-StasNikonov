@@ -5,9 +5,10 @@ const logProviderResponse = require('../logging/logProviderResponse');
 class OpenWeatherMapProvider extends IWeatherProvider {
   async fetch(city) {
     const apiKey = process.env.OWM_API_KEY;
+    const apiUrl = process.env.OWM_API_BASE_URL;
     try {
       const geoResponse = await axios.get(
-        `http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${apiKey}`,
+        `${apiUrl}/geo/1.0/direct?q=${city}&limit=1&appid=${apiKey}`,
       );
 
       logProviderResponse('openweathermap.org/geo', geoResponse.data);
@@ -15,7 +16,7 @@ class OpenWeatherMapProvider extends IWeatherProvider {
       const { lat, lon, name } = geoResponse.data[0];
 
       const weatherResponse = await axios.get(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric&lang=uk`,
+        `${apiUrl}/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric&lang=uk`,
       );
 
       const data = weatherResponse.data;
@@ -28,7 +29,7 @@ class OpenWeatherMapProvider extends IWeatherProvider {
         city: name,
       };
     } catch (error) {
-      console.error('❌ OpenWeatherMap error:', error.message);
+      console.error('OpenWeatherMap error:', error.message);
       const err = new Error(
         'OpenWeatherMap failed and no fallback provider available',
       );

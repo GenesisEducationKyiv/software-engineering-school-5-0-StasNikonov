@@ -3,7 +3,8 @@ const ICityValidator = require('./ICityValidator');
 class OpenWeatherCityValidator extends ICityValidator {
   async validateCity(city) {
     const apiKey = process.env.OWM_API_KEY;
-    const url = `http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${apiKey}`;
+    const apiUrl = process.env.OWM_API_BASE_URL;
+    const url = `${apiUrl}/geo/1.0/direct?q=${city}&limit=1&appid=${apiKey}`;
 
     try {
       const response = await fetch(url);
