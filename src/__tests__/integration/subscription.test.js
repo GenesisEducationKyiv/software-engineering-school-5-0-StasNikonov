@@ -84,10 +84,6 @@ describe('Weather Subscription API', () => {
     });
   });
 
-  afterEach(async () => {
-    await Subscription.destroy({ where: { email: testEmail } });
-  });
-
   it('should subscribe a user with valid data', async () => {
     const response = await request(app).post('/api/subscribe').send({
       email: testEmail,
@@ -99,6 +95,7 @@ describe('Weather Subscription API', () => {
     expect(response.body.message).toMatch(/confirmation/i);
 
     const sub = await Subscription.findOne({ where: { email: testEmail } });
+
     expect(sub).not.toBeNull();
     expect(sub.confirmed).toBe(false);
   });

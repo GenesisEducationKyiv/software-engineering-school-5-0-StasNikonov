@@ -33,7 +33,7 @@ test.describe('Форма підписки на прогноз погоди', ()
     );
   });
 
-  test('should fail with email', async ({ page }) => {
+  test('should fail with missing email', async ({ page }) => {
     await page.fill('#city', 'Kyiv');
     await page.selectOption('#frequency', 'daily');
     await page.click('button[type="submit"]');
@@ -76,5 +76,15 @@ test.describe('Форма підписки на прогноз погоди', ()
     await expect(message).toHaveText(/Invalid email format/i, {
       timeout: 3000,
     });
+  });
+
+  test('Should fail on invalid city', async ({ page }) => {
+    await page.fill('#email', 'invalidcity@example.com');
+    await page.fill('#city', 'InvalidCityName123');
+    await page.selectOption('#frequency', 'daily');
+    await page.click('button[type="submit"]');
+
+    const message = page.locator('#message');
+    await expect(message).toHaveText(/City not found/i, { timeout: 3000 });
   });
 });

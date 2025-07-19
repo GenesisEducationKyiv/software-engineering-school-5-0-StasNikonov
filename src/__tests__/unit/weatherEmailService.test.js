@@ -135,4 +135,42 @@ describe('WeatherEmailServiceTest', () => {
     expect(weatherProviderMock.getWeather).toHaveBeenCalledWith('Kyiv');
     expect(emailAdapterMock.sendWeatherEmail).toHaveBeenCalled();
   });
+
+  it('should do nothing if no subscribers found', async () => {
+    dbMock.getConfirmedByFrequency.mockResolvedValue([]);
+
+    await service.sendEmails('daily');
+
+    expect(dbMock.getConfirmedByFrequency).toHaveBeenCalledWith('daily');
+    expect(weatherProviderMock.getWeather).not.toHaveBeenCalled();
+    expect(emailAdapterMock.sendWeatherEmail).not.toHaveBeenCalled();
+  });
+
+  it('should send emails correctly for multiple hourly subscribers', async () => {
+    const subscribers = [
+      { email: 'hourly1@example.com', city: 'Kyiv', frequency: 'hourly' },
+      { email: 'hourly2@example.com', city: 'Lviv', frequency: 'hourly' },
+    ];
+
+    dbMock.getConfirmedByFrequency.mockResolvedValue(subscribers);
+    weatherProviderMock.getWeather.mockImplementation(async (city) => ({
+      temp: city === 'Kyiv' ? 15 : 10,
+    }));
+
+    await service.sendEmails('hourly');
+
+    expect(dbMock.getConfirmedByFrequency).toHaveBeenCalledWith('hourly');
+    expect(weatherProviderMock.getWeather).toHaveBeenCalledTimes(2);
+    expect(weatherProviderMock.getWeather).toHaveBeenCalledWith('Kyiv');
+    expect(weatherProviderMock.getWeather).toHaveBeenCalledWith('Lviv');
+    expect(emailAdapterMock.sendWeatherEmail).toHaveBeenCalledTimes(2);
+    expect(emailAdapterMock.sendWeatherEmail).toHaveBeenCalledWith(
+      subscribers[0],
+      { temp: 15 },
+    );
+    expect(emailAdapterMock.sendWeatherEmail).toHaveBeenCalledWith(
+      subscribers[1],
+      { temp: 10 },
+    );
+  });
 });
