@@ -14,6 +14,7 @@ describe('validateCity', () => {
     });
 
     const result = await validateCity('Kyiv');
+
     expect(result).toBe(true);
   });
 
@@ -23,6 +24,7 @@ describe('validateCity', () => {
     });
 
     const result = await validateCity('kyiv');
+
     expect(result).toBe(true);
   });
 
@@ -32,6 +34,7 @@ describe('validateCity', () => {
     });
 
     const result = await validateCity('Kyiv');
+
     expect(result).toBe(false);
   });
 
@@ -41,6 +44,7 @@ describe('validateCity', () => {
     );
 
     const result = await validateCity('Kyiv');
+
     expect(result).toBe(false);
   });
 
@@ -50,11 +54,13 @@ describe('validateCity', () => {
     });
 
     const result = await validateCity('New York');
+
     expect(result).toBe(true);
   });
 
   it('should return false for empty city string', async () => {
     const result = await validateCity('');
+
     expect(result).toBe(false);
   });
 
@@ -62,6 +68,7 @@ describe('validateCity', () => {
     WeatherAPIProvider.prototype.fetch.mockResolvedValue(null);
 
     const result = await validateCity('Kyiv');
+
     expect(result).toBe(false);
   });
 
@@ -69,6 +76,7 @@ describe('validateCity', () => {
     WeatherAPIProvider.prototype.fetch.mockResolvedValue(undefined);
 
     const result = await validateCity('Kyiv');
+
     expect(result).toBe(false);
   });
 
@@ -76,6 +84,7 @@ describe('validateCity', () => {
     WeatherAPIProvider.prototype.fetch.mockResolvedValue({});
 
     const result = await validateCity('Kyiv');
+
     expect(result).toBe(false);
   });
 
@@ -85,6 +94,7 @@ describe('validateCity', () => {
     });
 
     const result = await validateCity('Kyiv');
+
     expect(result).toBe(false);
   });
 });

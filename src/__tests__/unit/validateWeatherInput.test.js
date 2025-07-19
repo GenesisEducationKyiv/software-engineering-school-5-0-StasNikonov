@@ -84,6 +84,7 @@ describe('validateWeatherInput middleware', () => {
 
   it('returns 400 if multiple city query params are provided', async () => {
     req.query = { city: ['Kyiv', 'London'] };
+
     await validateWeatherInput(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(400);
