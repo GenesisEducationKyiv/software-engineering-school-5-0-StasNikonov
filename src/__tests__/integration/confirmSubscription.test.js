@@ -23,23 +23,29 @@ describe('GET /confirm/:token', () => {
 
   it('should confirm subscription with valid token', async () => {
     const response = await request(app).get(`/api/confirm/${testToken}`);
+
     expect(response.statusCode).toBe(200);
 
     const updated = await Subscription.findByPk(subscription.id);
+
     expect(updated.confirmed).toBe(true);
   });
 
   it('should return 404 for invalid token', async () => {
     const response = await request(app).get('/api/confirm/non-existing-token');
+
     expect(response.statusCode).toBe(404);
     expect(response.body.message).toMatch(/Token not found/i);
   });
 
   it('should not confirm subscription again with the same token', async () => {
-    await request(app).get(`/api/confirm/${testToken}`);
+    const firstResponse = await request(app).get(`/api/confirm/${testToken}`);
 
-    const response = await request(app).get(`/api/confirm/${testToken}`);
-    expect(response.statusCode).toBe(409);
-    expect(response.body.message).toMatch(/Token not found|Already confirmed/i);
+    expect(firstResponse.statusCode).toBe(200);
+
+    const secondResponse = await request(app).get(`/api/confirm/${testToken}`);
+
+    expect(secondResponse.statusCode).toBe(409);
+    expect(secondResponse.body.message).toMatch(/Already confirmed/i);
   });
 });
