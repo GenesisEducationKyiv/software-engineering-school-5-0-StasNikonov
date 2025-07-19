@@ -8,7 +8,18 @@ const allowedFrequencies = ['hourly', 'daily'];
 
 const validateSubscriptionInput = async (req, res, next) => {
   try {
-    const { email, city, frequency } = req.body;
+    let { email, city, frequency } = req.body;
+
+    if (typeof city === 'string') {
+      city = city.trim().toLowerCase();
+      city = city.charAt(0).toUpperCase() + city.slice(1);
+      req.body.city = city;
+    }
+
+    console.log(
+      'Received city in subscription:',
+      JSON.stringify(req.body.city),
+    );
 
     if (typeof email !== 'string') {
       return res
