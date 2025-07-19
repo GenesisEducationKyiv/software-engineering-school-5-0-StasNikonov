@@ -20,8 +20,15 @@ class SubscriptionService {
       frequency,
       token,
     });
-
-    await this.emailAdapter.sendConfirmationEmail(email, city, token);
+    try {
+      await this.emailAdapter.sendConfirmationEmail(email, city, token);
+    } catch (error) {
+      console.error('Failed to send confirmation email:', error);
+      return {
+        status: 500,
+        message: `Failed to send confirmation email`,
+      };
+    }
 
     return {
       status: 200,
