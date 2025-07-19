@@ -3,6 +3,13 @@ const { validateCity } = require('../../utils/validators/cityValidator');
 const validateWeatherInput = async (req, res, next) => {
   const { city } = req.query;
 
+  if (Array.isArray(req.query.city)) {
+    return res.status(400).json({
+      error: true,
+      message: 'City parameter must be a single value',
+    });
+  }
+
   if (!city || city.trim() === '') {
     return res
       .status(400)
@@ -24,4 +31,4 @@ const validateWeatherInput = async (req, res, next) => {
   next();
 };
 
-module.exports = { validateWeatherFields: validateWeatherInput };
+module.exports = { validateWeatherInput };

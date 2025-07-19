@@ -5,7 +5,14 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index.js",
-    "test": "jest",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "jest __tests__/unit",
+    "test:integration": "jest __tests__/integration",
+    "test:e2e": "playwright test",
+    "test:unit:docker": "docker-compose --env-file .env.test -f docker-compose.test.yml run --rm test_runner npm run test:unit",
+    "test:integration:docker": "docker-compose --env-file .env.test -f docker-compose.test.yml run --rm test_runner npm run test:integration",
+    "test:e2e:docker": "docker-compose --env-file .env.test -f docker-compose.test.yml run --rm playwright_runner npm run test:e2e",
+    "test:clean": "docker-compose -f docker-compose.test.yml down -v",
     "lint": "eslint ."
   },
   "keywords": [],
@@ -13,6 +20,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@playwright/test": "^1.53.0",
     "axios": "^1.9.0",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
@@ -25,6 +33,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.28.0",
+    "dotenv-cli": "^8.0.0",
     "eslint": "^9.28.0",
     "eslint-plugin-prettier": "^5.4.1",
     "globals": "^16.2.0",

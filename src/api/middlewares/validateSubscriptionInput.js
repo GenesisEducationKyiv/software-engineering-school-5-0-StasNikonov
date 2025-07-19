@@ -8,7 +8,18 @@ const allowedFrequencies = ['hourly', 'daily'];
 
 const validateSubscriptionInput = async (req, res, next) => {
   try {
-    const { email, city, frequency } = req.body;
+    let { email, city, frequency } = req.body;
+
+    if (typeof city === 'string') {
+      city = city.trim().toLowerCase();
+      city = city.charAt(0).toUpperCase() + city.slice(1);
+      req.body.city = city;
+    }
+
+    console.log(
+      'Received city in subscription:',
+      JSON.stringify(req.body.city),
+    );
 
     const fieldValidation = isValidFields(email, city, frequency);
     if (!fieldValidation.valid) {
@@ -31,7 +42,7 @@ const validateSubscriptionInput = async (req, res, next) => {
 
     const isCityCorrect = await validateCity(city);
     if (!isCityCorrect) {
-      return res.status(400).json({ error: true, message: 'City not found' });
+      return res.status(404).json({ error: true, message: 'City not found' });
     }
 
     next();

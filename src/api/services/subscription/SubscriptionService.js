@@ -20,8 +20,15 @@ class SubscriptionService {
       frequency,
       token,
     });
-
-    await this.emailAdapter.sendConfirmationEmail(email, city, token);
+    try {
+      await this.emailAdapter.sendConfirmationEmail(email, city, token);
+    } catch (error) {
+      console.error('Failed to send confirmation email:', error);
+      return {
+        status: 500,
+        message: `Failed to send confirmation email`,
+      };
+    }
 
     return {
       status: 200,
@@ -32,6 +39,8 @@ class SubscriptionService {
   async confirm({ token }) {
     const subscription = await this.subscriptionRepository.findByToken(token);
     if (!subscription) return { status: 404, message: 'Token not found' };
+    if (subscription.confirmed)
+      return { status: 409, message: 'Already confirmed' };
 
     await this.subscriptionRepository.confirmSubscription(subscription);
     return { status: 200, message: 'Subscription confirmed successfully' };
