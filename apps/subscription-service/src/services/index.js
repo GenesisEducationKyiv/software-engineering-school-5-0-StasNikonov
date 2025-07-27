@@ -1,6 +1,5 @@
 const SubscriptionService = require('./SubscriptionService');
-const SubscriptionRepository = require('../repositories/SubscriptionRepository');
-const subscriptionRepository = new SubscriptionRepository();
+const subscriptionRepository = require('../repositories/index');
 
 const mailerClient = require('../clients/mailerClient');
 

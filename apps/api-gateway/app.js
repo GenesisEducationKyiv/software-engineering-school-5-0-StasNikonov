@@ -15,5 +15,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(process.env.PORT, () => {
-  console.log(`API Gateway running on port ${process.env.PORT}`);
+  console.log(`API Gateway running on port ${process.env.APIGATEWAY_PORT}`);
 });

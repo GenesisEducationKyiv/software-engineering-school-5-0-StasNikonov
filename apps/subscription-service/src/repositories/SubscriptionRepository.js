@@ -1,18 +1,22 @@
-const { Subscription } = require('../../db/models');
 const ISubscriptionRepository = require('./ISubscriptionRepository');
 
 class SubscriptionRepository extends ISubscriptionRepository {
+  constructor(SubscriptionModel) {
+    super();
+    this.Subscription = SubscriptionModel;
+  }
+
   findSubscription = (email, city) => {
-    return Subscription.findOne({ where: { email, city } });
+    return this.Subscription.findOne({ where: { email, city } });
   };
   findByToken = (token) => {
-    return Subscription.findOne({ where: { token } });
+    return this.Subscription.findOne({ where: { token } });
   };
   getConfirmedByFrequency = (frequency) => {
-    return Subscription.findAll({ where: { confirmed: true, frequency } });
+    return this.Subscription.findAll({ where: { confirmed: true, frequency } });
   };
   createSubscription = (data) => {
-    return Subscription.create(data);
+    return this.Subscription.create(data);
   };
   confirmSubscription = (subscription) => {
     return subscription.update({ confirmed: true });

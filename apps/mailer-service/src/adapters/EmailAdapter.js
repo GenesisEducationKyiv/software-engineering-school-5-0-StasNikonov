@@ -1,16 +1,17 @@
-const NodemailerProvider = require('../providers/NodemailerProvider');
 const {
   buildConfirmationEmail,
 } = require('../templates/buildConfirmationEmail');
 const { prepareEmailHtml } = require('../utils/prepareEmailHtml');
 
-const emailProvider = new NodemailerProvider();
-
 class EmailAdapter {
+  constructor(provider) {
+    this.emailProvider = provider;
+  }
+
   async sendWeatherEmail(subscriber, weather) {
     const html = prepareEmailHtml(subscriber, weather);
 
-    await emailProvider.sendEmail({
+    await this.emailProvider.sendEmail({
       to: subscriber.email,
       subject: `Погода у місті ${subscriber.city}`,
       html,
@@ -23,7 +24,7 @@ class EmailAdapter {
     const baseUrl = process.env.BASE_URL;
     const confirmLink = `${baseUrl}/api/confirm/${token}`;
 
-    await emailProvider.sendEmail({
+    await this.emailProvider.sendEmail({
       to: email,
       subject: 'Підтвердження підписки на погоду',
       html: buildConfirmationEmail(city, confirmLink),
