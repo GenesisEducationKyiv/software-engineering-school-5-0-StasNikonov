@@ -20,7 +20,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd ${{ matrix.service }}
+          cd apps/${{ matrix.service }}
           npm ci
 
       - name: Unit tests
