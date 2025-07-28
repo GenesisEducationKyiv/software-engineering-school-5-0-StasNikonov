@@ -25,10 +25,10 @@ jobs:
 
       - name: Unit tests
         run: |
-          cd services/${{ matrix.service }}
+          cd apps/${{ matrix.service }}
           npm run test:unit
 
       - name: Integration tests
         run: |
-          cd services/${{ matrix.service }}
+          cd apps/${{ matrix.service }}
           npm run test:integration
