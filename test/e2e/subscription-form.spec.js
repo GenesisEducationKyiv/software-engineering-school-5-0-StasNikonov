@@ -2,7 +2,7 @@ const { test, expect } = require('@playwright/test');
 
 test.describe('Форма підписки на прогноз погоди', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:3002/subscribe.html');
+    await page.goto('http://api-gateway:3001/subscribe.html');
   });
 
   test('Should display weather form', async ({ page }) => {
@@ -39,7 +39,9 @@ test.describe('Форма підписки на прогноз погоди', ()
     await page.click('button[type="submit"]');
 
     const message = page.locator('#message');
-    await expect(message).toHaveText(/Invalid input/i, { timeout: 3000 });
+    await expect(message).toHaveText(/Invalid email format/i, {
+      timeout: 3000,
+    });
   });
 
   test('should fail with missing city', async ({ page }) => {
@@ -48,7 +50,9 @@ test.describe('Форма підписки на прогноз погоди', ()
     await page.click('button[type="submit"]');
 
     const message = page.locator('#message');
-    await expect(message).toHaveText(/Invalid input/i, { timeout: 3000 });
+    await expect(message).toHaveText(/City must be a non-empty string/i, {
+      timeout: 3000,
+    });
   });
 
   test('should fail with missing frequency', async ({ page }) => {
@@ -57,7 +61,9 @@ test.describe('Форма підписки на прогноз погоди', ()
     await page.click('button[type="submit"]');
 
     const message = page.locator('#message');
-    await expect(message).toHaveText(/Invalid input/i, { timeout: 3000 });
+    await expect(message).toHaveText(/Invalid frequency value/i, {
+      timeout: 3000,
+    });
   });
 
   test('should fail with invalid email', async ({ page }) => {

@@ -4,9 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start:test": "docker-compose -f docker-compose.test.yml --env-file .env.test up -d --build",
-    "stop:test": "docker-compose -f docker-compose.test.yml down",
-    "e2e": "npm run start:test && npx playwright test && npm run stop:test",
+    "test:e2e": "npx playwright test",
     "lint": "eslint ."
   },
   "keywords": [],
