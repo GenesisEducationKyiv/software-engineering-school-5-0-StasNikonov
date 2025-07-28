@@ -2,7 +2,7 @@ require('dotenv').config();
 const cron = require('node-cron');
 const weatherEmailService = require('../services/index');
 
-cron.schedule('* * * * *', async () => {
+cron.schedule('0 * * * *', async () => {
   console.log('Hourly job started');
   await weatherEmailService.sendEmails('hourly');
 });
