@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "@testcontainers/postgresql": "^11.4.0",
+    "jest": "^30.0.5",
     "testcontainers": "^11.4.0"
   }
 }

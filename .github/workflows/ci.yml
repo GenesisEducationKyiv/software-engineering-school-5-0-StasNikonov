@@ -19,16 +19,13 @@ jobs:
           node-version: 24
 
       - name: Install dependencies
-        run: |
-          cd apps/${{ matrix.service }}
-          npm ci
+        working-directory: apps/${{ matrix.service }}
+        run: npm ci
 
-      - name: Unit tests
-        run: |
-          cd apps/${{ matrix.service }}
-          npm run test:unit
+      - name: Run unit tests
+        working-directory: apps/${{ matrix.service }}
+        run: npm run test:unit
 
-      - name: Integration tests
-        run: |
-          cd apps/${{ matrix.service }}
-          npm run test:integration
+      - name: Run integration tests
+        working-directory: apps/${{ matrix.service }}
+        run: npm run test:integration
