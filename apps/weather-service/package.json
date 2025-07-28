@@ -24,7 +24,7 @@
     "redis": "^5.6.0"
   },
   "devDependencies": {
-    "testcontainers": "^11.3.2",
-    "jest": "^29.7.0"
+    "jest": "^29.7.0",
+    "testcontainers": "^11.3.2"
   }
 }
