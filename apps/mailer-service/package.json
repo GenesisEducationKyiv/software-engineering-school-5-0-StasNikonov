@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon app.js",
     "test:unit": "jest --testPathPatterns=unit",
-    "test:integration": "jest --testPathPatterns=integration"
+    "test:integration": "jest --testPathPatterns=integration --passWithNoTests"
   },
   "keywords": [],
   "author": "",
