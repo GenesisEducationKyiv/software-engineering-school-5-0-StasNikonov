@@ -15,6 +15,7 @@ services:
       - "5433:5432"
     volumes:
       - pgtestdata:/var/lib/postgresql/data
+
   test_runner:
     build:
       context: .
@@ -31,10 +32,20 @@ services:
       OWM_API_KEY: ${OWM_API_KEY}
       EMAIL_USER: ${EMAIL_USER}
       EMAIL_PASS: ${EMAIL_PASS}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
     depends_on:
       test_db:
         condition: service_healthy
+      redis:
+        condition: service_started
     command: npm test
+
+  redis:
+    image: redis:7
+    container_name: test_weather_redis
+    ports:
+      - "6380:6379"
 
   playwright_runner:
     build:
@@ -52,9 +63,13 @@ services:
       OWM_API_KEY: ${OWM_API_KEY}
       EMAIL_USER: ${EMAIL_USER}
       EMAIL_PASS: ${EMAIL_PASS}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
     depends_on:
       test_db:
         condition: service_healthy
+      redis:
+        condition: service_started
 
   migrate:
     build:
@@ -71,6 +86,8 @@ services:
     depends_on:
       test_db:
         condition: service_healthy
+      redis:
+        condition: service_started
     command: sh -c "npx sequelize-cli db:migrate --config src/db/config/config.js"
 
 volumes:
