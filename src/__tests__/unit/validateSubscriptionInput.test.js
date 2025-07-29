@@ -2,7 +2,9 @@ const {
   validateSubscriptionInput,
 } = require('../../../src/api/middlewares/validateSubscriptionInput');
 const validators = require('../../../src/utils/validators/validateSubscriptionFields');
-const cityValidator = require('../../api/services/cityValidation/cityValidator');
+const {
+  cityValidator,
+} = require('../../api/services/cityValidation/cityValidator');
 
 jest.mock('../../../src/utils/validators/validateSubscriptionFields');
 jest.mock('../../../src/api/services/cityValidation/cityValidator');
@@ -32,7 +34,7 @@ describe('validateSubscriptionInput middleware', () => {
   it('should call next() if input is valid', async () => {
     validators.isValidFields.mockReturnValue({ valid: true });
     validators.isValidEmail.mockReturnValue(true);
-    cityValidator.createValidator.mockReturnValue(() => Promise.resolve(true));
+    cityValidator.validateCity = jest.fn().mockResolvedValue(true);
 
     await validateSubscriptionInput(req, res, next);
 
@@ -90,7 +92,7 @@ describe('validateSubscriptionInput middleware', () => {
   it('should return 404 if city is invalid', async () => {
     validators.isValidFields.mockReturnValue({ valid: true });
     validators.isValidEmail.mockReturnValue(true);
-    cityValidator.createValidator.mockReturnValue(() => Promise.resolve(false));
+    cityValidator.validateCity = jest.fn().mockResolvedValue(false);
 
     await validateSubscriptionInput(req, res, next);
 

@@ -1,5 +1,6 @@
 const axios = require('axios');
 const WeatherAPIProvider = require('../../../src/api/providers/WeatherAPIProvider');
+const ChainWeatherProvider = require('../../api/providers/ChainWeatherProvider');
 
 jest.mock('axios');
 
@@ -42,18 +43,26 @@ describe('WeatherAPIProvider', () => {
   });
 
   it('should delegate to next provider on error', async () => {
+    const city = 'Odesa';
+
     const mockError = new Error('API failed');
-    axios.get.mockRejectedValue(mockError);
+
+    const failingProvider = {
+      fetch: jest.fn().mockRejectedValue(mockError),
+    };
 
     const fallbackProvider = {
       fetch: jest.fn().mockResolvedValue({ temperature: 22 }),
     };
 
-    const provider = new WeatherAPIProvider();
-    provider.setNext(fallbackProvider);
+    const chainProvider = new ChainWeatherProvider([
+      failingProvider,
+      fallbackProvider,
+    ]);
 
-    const result = await provider.fetch(city);
+    const result = await chainProvider.fetch(city);
 
+    expect(failingProvider.fetch).toHaveBeenCalledWith(city);
     expect(fallbackProvider.fetch).toHaveBeenCalledWith(city);
     expect(result).toEqual({ temperature: 22 });
   });

@@ -1,7 +1,9 @@
 const {
   validateWeatherInput,
 } = require('../../../src/api/middlewares/validateWeatherInput');
-const cityValidator = require('../../../src/api/services/cityValidation/cityValidator');
+const {
+  cityValidator,
+} = require('../../../src/api/services/cityValidation/cityValidator');
 
 jest.mock('../../../src/api/services/cityValidation/cityValidator');
 
@@ -21,11 +23,11 @@ describe('validateWeatherInput middleware', () => {
   });
 
   it('should call next() if city is valid', async () => {
-    cityValidator.createValidator.mockReturnValue(() => Promise.resolve(true));
+    cityValidator.validateCity = jest.fn().mockResolvedValue(true);
 
     await validateWeatherInput(req, res, next);
 
-    expect(cityValidator.createValidator).toHaveBeenCalled();
+    expect(cityValidator.validateCity).toHaveBeenCalled();
     expect(next).toHaveBeenCalled();
     expect(res.status).not.toHaveBeenCalled();
   });
@@ -44,7 +46,7 @@ describe('validateWeatherInput middleware', () => {
   });
 
   it('should return 404 if city is invalid', async () => {
-    cityValidator.createValidator.mockReturnValue(() => Promise.resolve(false));
+    cityValidator.validateCity = jest.fn().mockResolvedValue(false);
 
     await validateWeatherInput(req, res, next);
 
@@ -57,9 +59,7 @@ describe('validateWeatherInput middleware', () => {
   });
 
   it('should return 500 if validator throws', async () => {
-    cityValidator.createValidator.mockImplementation(() => {
-      throw new Error('Unexpected error');
-    });
+    cityValidator.validateCity.mockRejectedValue(new Error('Unexpected error'));
 
     await validateWeatherInput(req, res, next);
 

@@ -1,15 +1,13 @@
 const WeatherAPICityValidator = require('./WeatherAPICityValidator');
 const OpenWeatherCityValidator = require('./OpenWeatherCityValidator');
-const CityValidationChain = require('./CityValidationChain');
+const CityValidationChain = require('./ChainCityValidation');
 
-const createValidator = () => {
-  const weatherAPICityValidator = new WeatherAPICityValidator();
-  const openWeatherCityValidator = new OpenWeatherCityValidator();
-  weatherAPICityValidator.setNext(openWeatherCityValidator);
+const weatherAPICityValidator = new WeatherAPICityValidator();
+const openWeatherCityValidator = new OpenWeatherCityValidator();
 
-  const cityValidator = new CityValidationChain(weatherAPICityValidator);
+const cityValidator = new CityValidationChain([
+  weatherAPICityValidator,
+  openWeatherCityValidator,
+]);
 
-  return async (city) => cityValidator.isValid(city);
-};
-
-module.exports = { createValidator };
+module.exports = { cityValidator };

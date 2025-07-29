@@ -1,6 +1,5 @@
 const axios = require('axios');
 const AbstractWeatherProvider = require('./AbstractWeatherProvider');
-const logProviderResponse = require('../../utils/logProviderResponse');
 
 class OpenWeatherMapProvider extends AbstractWeatherProvider {
   async fetch(city) {
@@ -11,8 +10,6 @@ class OpenWeatherMapProvider extends AbstractWeatherProvider {
         `http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${apiKey}`,
       );
 
-      logProviderResponse('openweathermap.org/geo', geoResponse.data);
-
       const { lat, lon, name } = geoResponse.data[0];
 
       const weatherResponse = await axios.get(
@@ -20,8 +17,6 @@ class OpenWeatherMapProvider extends AbstractWeatherProvider {
       );
 
       const data = weatherResponse.data;
-
-      logProviderResponse('openweathermap.org/data', data);
 
       return {
         temperature: data.main.temp,
