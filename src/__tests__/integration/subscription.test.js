@@ -169,7 +169,7 @@ describe('Weather Subscription API', () => {
 
   it('should normalize city input and subscribe successfully', async () => {
     const response = await request(app).post('/api/subscribe').send({
-      email: 'normalized@example.com',
+      email: testEmail,
       city: '   kYiV  ',
       frequency: 'daily',
     });
@@ -178,7 +178,7 @@ describe('Weather Subscription API', () => {
     expect(response.body.message).toMatch(/confirmation/i);
 
     const sub = await Subscription.findOne({
-      where: { email: 'normalized@example.com' },
+      where: { email: testEmail },
     });
 
     expect(sub).not.toBeNull();
