@@ -1,18 +1,17 @@
 const axios = require('axios');
 const IWeatherProvider = require('./IWeatherProvider');
-const logProviderResponse = require('../logging/logProviderResponse');
 
 class WeatherAPIProvider extends IWeatherProvider {
   async fetch(city) {
     const apiKey = process.env.WEATHER_API_KEY;
-    const apiUrl = process.env.WEATHER_API_BASE_URL;
+    const apiUrl =
+      process.env.WEATHER_API_BASE_URL || 'http://api.weatherapi.com/v1';
     const url = `${apiUrl}/current.json?key=${apiKey}&q=${city}&lang=uk`;
     try {
       const response = await axios.get(url);
 
       const data = response.data;
 
-      logProviderResponse('weatherapi.com/v1/current.json', data);
       return {
         temperature: data.current.temp_c,
         humidity: data.current.humidity,

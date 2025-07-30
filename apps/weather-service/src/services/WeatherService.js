@@ -16,6 +16,8 @@ class WeatherService {
   }
 
   async getWeather(city) {
+    const CACHE_TTL = process.env.CACHE_TTL || 3600;
+
     const cacheKey = `weather:${city.toLowerCase()}`;
     const cached = await this.redisClient.get(cacheKey);
     if (cached) {
@@ -27,7 +29,7 @@ class WeatherService {
     const weather = await this.weatherProvider.fetch(city);
     await this.redisClient.setEx(
       cacheKey,
-      3600,
+      CACHE_TTL,
       JSON.stringify(this.dataFormatter(weather)),
     );
     return this.dataFormatter(weather);
@@ -35,7 +37,7 @@ class WeatherService {
 
   async validateCity(city) {
     try {
-      return await this.cityValidator.isValid(city);
+      return await this.cityValidator.validateCity(city);
     } catch (error) {
       console.error('validateCity error:', error.message);
       return false;
