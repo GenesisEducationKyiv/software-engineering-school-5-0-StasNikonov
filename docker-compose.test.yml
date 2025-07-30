@@ -37,7 +37,7 @@ services:
     depends_on:
       test_db:
         condition: service_healthy
-      redis:
+      test_redis:
         condition: service_started
     command: npm test
 
@@ -68,7 +68,7 @@ services:
     depends_on:
       test_db:
         condition: service_healthy
-      redis:
+      test_redis:
         condition: service_started
 
   migrate:
@@ -86,7 +86,7 @@ services:
     depends_on:
       test_db:
         condition: service_healthy
-      redis:
+      test_redis:
         condition: service_started
     command: sh -c "npx sequelize-cli db:migrate --config src/db/config/config.js"
 
