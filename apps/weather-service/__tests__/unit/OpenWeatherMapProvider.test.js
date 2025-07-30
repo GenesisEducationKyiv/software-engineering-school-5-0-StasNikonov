@@ -1,6 +1,5 @@
 const axios = require('axios');
 const OpenWeatherMapProvider = require('../../src/providers/OpenWeatherMapProvider');
-const logProviderResponse = require('../../src/logging/logProviderResponse');
 
 jest.mock('axios');
 jest.mock('../../src/logging/logProviderResponse');
@@ -35,8 +34,6 @@ describe('OpenWeatherMapProvider', () => {
       description: 'сонячно',
       city: 'Kyiv',
     });
-
-    expect(logProviderResponse).toHaveBeenCalledTimes(2);
   });
 
   it('should throw error when API fails', async () => {

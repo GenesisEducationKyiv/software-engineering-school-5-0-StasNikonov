@@ -16,7 +16,7 @@ describe('WeatherService', () => {
   beforeEach(() => {
     weatherProvider = { fetch: jest.fn() };
     dataFormatter = jest.fn();
-    cityValidator = { isValid: jest.fn() };
+    cityValidator = { validateCity: jest.fn() };
     redisClient = {
       get: jest.fn(),
       setEx: jest.fn(),
@@ -63,7 +63,7 @@ describe('WeatherService', () => {
   });
 
   it('validateCity returns true for valid city', async () => {
-    cityValidator.isValid.mockResolvedValueOnce(true);
+    cityValidator.validateCity.mockResolvedValueOnce(true);
 
     const result = await service.validateCity(city);
 
@@ -71,7 +71,7 @@ describe('WeatherService', () => {
   });
 
   it('validateCity returns false for invalid city', async () => {
-    cityValidator.isValid.mockResolvedValueOnce(false);
+    cityValidator.validateCity.mockResolvedValueOnce(false);
 
     const result = await service.validateCity(city);
 
@@ -79,7 +79,7 @@ describe('WeatherService', () => {
   });
 
   it('validateCity handles exceptions and returns false', async () => {
-    cityValidator.isValid.mockRejectedValueOnce(new Error('error'));
+    cityValidator.validateCity.mockRejectedValueOnce(new Error('error'));
 
     const result = await service.validateCity(city);
 
