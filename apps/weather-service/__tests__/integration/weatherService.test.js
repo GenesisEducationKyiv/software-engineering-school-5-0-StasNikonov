@@ -20,7 +20,7 @@ describe('WeatherService Integration Test (with Redis)', () => {
   }));
 
   const mockValidator = {
-    isValid: jest.fn().mockResolvedValue(true),
+    validateCity: jest.fn().mockResolvedValue(true),
   };
 
   const cacheHits = { inc: jest.fn() };
@@ -102,7 +102,7 @@ describe('WeatherService Integration Test (with Redis)', () => {
 
   it('should validate city correctly', async () => {
     const isValid = await weatherService.validateCity('Kyiv');
-    expect(mockValidator.isValid).toHaveBeenCalledWith('Kyiv');
+    expect(mockValidator.validateCity).toHaveBeenCalledWith('Kyiv');
     expect(isValid).toBe(true);
   });
 });
