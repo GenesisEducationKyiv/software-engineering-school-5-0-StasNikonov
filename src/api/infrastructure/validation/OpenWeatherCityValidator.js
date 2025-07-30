@@ -1,6 +1,6 @@
-const AbstractCityValidator = require('../../domain/validation/AbstractCityValidator');
+const ICityValidator = require('../../domain/validation/ICityValidator');
 
-class OpenWeatherCityValidator extends AbstractCityValidator {
+class OpenWeatherCityValidator extends ICityValidator {
   async validateCity(city) {
     const apiKey = process.env.OWM_API_KEY;
     const url = `http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${apiKey}`;
@@ -15,7 +15,9 @@ class OpenWeatherCityValidator extends AbstractCityValidator {
 
       const data = await response.json();
 
-      if (!Array.isArray(data) || data.length === 0) return false;
+      if (!Array.isArray(data) || data.length === 0) {
+        return false;
+      }
 
       return true;
     } catch (error) {

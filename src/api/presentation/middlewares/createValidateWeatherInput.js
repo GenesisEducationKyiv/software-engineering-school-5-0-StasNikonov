@@ -16,7 +16,7 @@ const createValidateWeatherInput = (validateCityFn) => {
     }
 
     try {
-      const isCityCorrect = await validateCityFn(city.trim());
+      const isCityCorrect = await validateCityFn.validateCity(city.trim());
       if (!isCityCorrect) {
         return res.status(404).json({ error: true, message: 'City not found' });
       }

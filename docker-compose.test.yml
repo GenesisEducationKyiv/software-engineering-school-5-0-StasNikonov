@@ -37,11 +37,11 @@ services:
     depends_on:
       test_db:
         condition: service_healthy
-      test_redis:
+      redis:
         condition: service_started
     command: npm test
 
-  test_redis:
+  redis:
     image: redis:7
     container_name: test_weather_redis
     ports:
@@ -68,7 +68,7 @@ services:
     depends_on:
       test_db:
         condition: service_healthy
-      test_redis:
+      redis:
         condition: service_started
 
   migrate:
@@ -86,7 +86,7 @@ services:
     depends_on:
       test_db:
         condition: service_healthy
-      test_redis:
+      redis:
         condition: service_started
     command: sh -c "npx sequelize-cli db:migrate --config src/db/config/config.js"
 

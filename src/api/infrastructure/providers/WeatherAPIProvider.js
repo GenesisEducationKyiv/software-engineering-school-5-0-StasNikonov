@@ -1,6 +1,5 @@
 const axios = require('axios');
 const AbstractWeatherProvider = require('../../domain/providers/IWeatherProvider');
-const logProviderResponse = require('../logging/logProviderResponse');
 
 class WeatherAPIProvider extends AbstractWeatherProvider {
   async fetch(city) {
@@ -10,8 +9,6 @@ class WeatherAPIProvider extends AbstractWeatherProvider {
       const response = await axios.get(url);
 
       const data = response.data;
-
-      logProviderResponse('weatherapi.com/v1/current.json', data);
 
       return {
         temperature: data.current.temp_c,
