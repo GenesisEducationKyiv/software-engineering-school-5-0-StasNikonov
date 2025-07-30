@@ -2,5 +2,5 @@ node_modules/
 .idea/
 .env
 .DS_Store
-src/api/infrastructure/logs
+src/api/infrastructure/logging/provider.log
 test-results/

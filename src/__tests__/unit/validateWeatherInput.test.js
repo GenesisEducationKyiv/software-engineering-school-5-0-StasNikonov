@@ -1,44 +1,39 @@
+const validateWeatherInput = require('../../../src/api/infrastructure/compositionRoot/validators/validateWeatherInput');
 const {
-  createValidateWeatherInput,
-} = require('../../../src/api/presentation/middlewares/createValidateWeatherInput');
+  cityValidator,
+} = require('../../api/infrastructure/compositionRoot/validators/cityValidator');
 
-describe('createValidateWeatherInput middleware', () => {
-  const next = jest.fn();
-  const mockValidateCity = jest.fn();
+jest.mock('../../api/infrastructure/compositionRoot/validators/cityValidator');
 
-  let middleware;
+describe('validateWeatherInput middleware', () => {
+  let req, res, next;
 
   beforeEach(() => {
+    req = { query: { city: 'Kyiv' } };
+
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+
+    next = jest.fn();
     jest.clearAllMocks();
-    middleware = createValidateWeatherInput(mockValidateCity);
   });
 
-  const createMockResponse = () => {
-    const res = {};
-    res.status = jest.fn().mockReturnValue(res);
-    res.json = jest.fn().mockReturnValue(res);
-    return res;
-  };
+  it('should call next() if city is valid', async () => {
+    cityValidator.validateCity = jest.fn().mockResolvedValue(true);
 
-  test('should reject if city is an array', async () => {
-    const req = { query: { city: ['Kyiv', 'Lviv'] } };
-    const res = createMockResponse();
+    await validateWeatherInput(req, res, next);
 
-    await middleware(req, res, next);
-
-    expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({
-      error: true,
-      message: 'City parameter must be a single value',
-    });
-    expect(next).not.toHaveBeenCalled();
+    expect(cityValidator.validateCity).toHaveBeenCalled();
+    expect(next).toHaveBeenCalled();
+    expect(res.status).not.toHaveBeenCalled();
   });
 
-  test('should reject if city is empty', async () => {
-    const req = { query: { city: '' } };
-    const res = createMockResponse();
+  it('should return 400 if city is missing', async () => {
+    req.query.city = '';
 
-    await middleware(req, res, next);
+    await validateWeatherInput(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
@@ -48,14 +43,11 @@ describe('createValidateWeatherInput middleware', () => {
     expect(next).not.toHaveBeenCalled();
   });
 
-  test('should reject if city is invalid according to validator', async () => {
-    mockValidateCity.mockResolvedValue(false);
-    const req = { query: { city: 'FakeCity' } };
-    const res = createMockResponse();
+  it('should return 404 if city is invalid', async () => {
+    cityValidator.validateCity = jest.fn().mockResolvedValue(false);
 
-    await middleware(req, res, next);
+    await validateWeatherInput(req, res, next);
 
-    expect(mockValidateCity).toHaveBeenCalledWith('FakeCity');
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.json).toHaveBeenCalledWith({
       error: true,
@@ -64,15 +56,10 @@ describe('createValidateWeatherInput middleware', () => {
     expect(next).not.toHaveBeenCalled();
   });
 
-  test('should handle internal errors during validation', async () => {
-    mockValidateCity.mockImplementation(() => {
-      throw new Error('Network error');
-    });
+  it('should return 500 if validator throws', async () => {
+    cityValidator.validateCity.mockRejectedValue(new Error('Unexpected error'));
 
-    const req = { query: { city: 'Kyiv' } };
-    const res = createMockResponse();
-
-    await middleware(req, res, next);
+    await validateWeatherInput(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({
@@ -82,16 +69,16 @@ describe('createValidateWeatherInput middleware', () => {
     expect(next).not.toHaveBeenCalled();
   });
 
-  test('should pass validation and call next()', async () => {
-    mockValidateCity.mockResolvedValue(true);
-    const req = { query: { city: 'Kyiv' } };
-    const res = createMockResponse();
+  it('returns 400 if multiple city query params are provided', async () => {
+    req.query = { city: ['Kyiv', 'London'] };
 
-    await middleware(req, res, next);
+    await validateWeatherInput(req, res, next);
 
-    expect(mockValidateCity).toHaveBeenCalledWith('Kyiv');
-    expect(next).toHaveBeenCalled();
-    expect(res.status).not.toHaveBeenCalled();
-    expect(res.json).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      error: true,
+      message: 'City parameter must be a single value',
+    });
+    expect(next).not.toHaveBeenCalled();
   });
 });

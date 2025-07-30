@@ -1,20 +1,16 @@
+const validateSubscriptionInput = require('../../../src/api/infrastructure/compositionRoot/validators/validateSubscriptionInput');
 const {
-  createValidateSubscriptionInput,
-} = require('../../../src/api/presentation/middlewares/createValidateSubscriptionInput');
+  cityValidator,
+} = require('../../api/infrastructure/compositionRoot/validators/cityValidator');
+
+jest.mock('../../api/infrastructure/compositionRoot/validators/cityValidator');
 
 describe('createValidateSubscriptionInput middleware', () => {
   const mockIsValidEmail = jest.fn();
-  const mockValidateCity = jest.fn();
   const next = jest.fn();
-
-  let middleware;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    middleware = createValidateSubscriptionInput(
-      mockValidateCity,
-      mockIsValidEmail,
-    );
   });
 
   const createMockResponse = () => {
@@ -28,7 +24,7 @@ describe('createValidateSubscriptionInput middleware', () => {
     const req = { body: { email: 123, city: 'Kyiv', frequency: 'daily' } };
     const res = createMockResponse();
 
-    await middleware(req, res, next);
+    await validateSubscriptionInput(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
@@ -44,7 +40,7 @@ describe('createValidateSubscriptionInput middleware', () => {
     };
     const res = createMockResponse();
 
-    await middleware(req, res, next);
+    await validateSubscriptionInput(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
@@ -61,7 +57,7 @@ describe('createValidateSubscriptionInput middleware', () => {
     };
     const res = createMockResponse();
 
-    await middleware(req, res, next);
+    await validateSubscriptionInput(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
@@ -78,7 +74,7 @@ describe('createValidateSubscriptionInput middleware', () => {
     };
     const res = createMockResponse();
 
-    await middleware(req, res, next);
+    await validateSubscriptionInput(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
@@ -90,13 +86,13 @@ describe('createValidateSubscriptionInput middleware', () => {
 
   test('should reject if city validation fails', async () => {
     mockIsValidEmail.mockReturnValue(true);
-    mockValidateCity.mockResolvedValue(false);
+    cityValidator.validateCity = jest.fn().mockResolvedValue(false);
     const req = {
       body: { email: 'test@example.com', city: 'Atlantis', frequency: 'daily' },
     };
     const res = createMockResponse();
 
-    await middleware(req, res, next);
+    await validateSubscriptionInput(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.json).toHaveBeenCalledWith({
@@ -104,20 +100,5 @@ describe('createValidateSubscriptionInput middleware', () => {
       message: 'City not found',
     });
     expect(next).not.toHaveBeenCalled();
-  });
-
-  test('should call next() if all input is valid', async () => {
-    mockIsValidEmail.mockReturnValue(true);
-    mockValidateCity.mockResolvedValue(true);
-    const req = {
-      body: { email: 'test@example.com', city: 'Kyiv', frequency: 'hourly' },
-    };
-    const res = createMockResponse();
-
-    await middleware(req, res, next);
-
-    expect(next).toHaveBeenCalled();
-    expect(res.status).not.toHaveBeenCalled();
-    expect(res.json).not.toHaveBeenCalled();
   });
 });

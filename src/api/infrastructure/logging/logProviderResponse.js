@@ -3,7 +3,7 @@ const path = require('path');
 
 function logProviderResponse(provider, responseData) {
   const logMessage = `${provider} - Response: ${JSON.stringify(responseData)}\n`;
-  const logFilePath = path.join(__dirname, '..', 'logs', 'provider.log');
+  const logFilePath = path.join(__dirname, '..', 'utils', 'provider.log');
 
   fs.mkdir(path.dirname(logFilePath), { recursive: true }, (err) => {
     if (err) return console.error('Failed to create log directory:', err);

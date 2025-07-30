@@ -1,16 +1,28 @@
 const WeatherAPIProvider = require('../../providers/WeatherAPIProvider');
 const OpenWeatherMapProvider = require('../../providers/OpenWeatherMapProvider');
+const LoggingWeatherProviderDecorator = require('../../decorators/LoggingWeatherProviderDecorator');
+const ChainWeatherProvider = require('../../../application/services/weather/ChainWeatherProvider');
 const WeatherService = require('../../../application/services/weather/WeatherService');
 const redisClient = require('../../cache/redisClient');
 const { cacheHits, cacheMisses } = require('../../metrics/metrics');
 
-const weatherAPIProvider = new WeatherAPIProvider();
-const openWeatherMapProvider = new OpenWeatherMapProvider();
+const weatherAPIProvider = new LoggingWeatherProviderDecorator(
+  new WeatherAPIProvider(),
+  'weatherapi.com/v1/current.json',
+);
 
-weatherAPIProvider.setNext(openWeatherMapProvider);
+const openWeatherMapProvider = new LoggingWeatherProviderDecorator(
+  new OpenWeatherMapProvider(),
+  'openweathermap.org/data',
+);
+
+const chainProvider = new ChainWeatherProvider([
+  weatherAPIProvider,
+  openWeatherMapProvider,
+]);
 
 const weatherService = new WeatherService(
-  weatherAPIProvider,
+  chainProvider,
   redisClient,
   cacheHits,
   cacheMisses,

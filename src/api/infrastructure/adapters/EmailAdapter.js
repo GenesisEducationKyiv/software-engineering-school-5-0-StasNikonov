@@ -1,8 +1,6 @@
 const NodemailerProvider = require('../providers/NodemailerProvider');
-const {
-  buildConfirmationEmail,
-} = require('../../domain/emails/buildConfirmationEmail');
-const { prepareEmailHtml } = require('../../domain/emails/prepareEmailHtml');
+const { buildConfirmationEmail } = require('../emails/buildConfirmationEmail');
+const { prepareEmailHtml } = require('../emails/prepareEmailHtml');
 const { BASE_URL } = require('../../../config/config');
 
 const emailProvider = new NodemailerProvider();

@@ -7,17 +7,17 @@ const weatherAPI = {
   fetch: jest.fn(),
 };
 
+const normalizeCity = (name) => name.trim().toLowerCase().replace(/\s+/g, '_');
+
 const weatherService = {
   getWeather: async (city) => {
+    const normalizedCity = normalizeCity(city);
+    const cacheKey = `weather:${normalizedCity}`;
     try {
-      const cached = await redisClient.get(`weather:${city}`);
+      const cached = await redisClient.get(cacheKey);
       if (cached) return JSON.parse(cached);
       const freshData = await weatherAPI.fetch(city);
-      await redisClient.setEx(
-        `weather:${city}`,
-        3600,
-        JSON.stringify(freshData),
-      );
+      await redisClient.setEx(cacheKey, 3600, JSON.stringify(freshData));
       return freshData;
     } catch {
       return await weatherAPI.fetch(city);
@@ -26,12 +26,16 @@ const weatherService = {
 };
 
 describe('WeatherService with Redis cache', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('should return cached data if present in Redis', async () => {
     redisClient.get.mockResolvedValue(JSON.stringify({ temp: 20 }));
 
     const data = await weatherService.getWeather('Kyiv');
 
-    expect(redisClient.get).toHaveBeenCalledWith('weather:Kyiv');
+    expect(redisClient.get).toHaveBeenCalledWith('weather:kyiv');
     expect(data.temp).toBe(20);
   });
 
@@ -42,10 +46,10 @@ describe('WeatherService with Redis cache', () => {
 
     const data = await weatherService.getWeather('Kyiv');
 
-    expect(redisClient.get).toHaveBeenCalledWith('weather:Kyiv');
+    expect(redisClient.get).toHaveBeenCalledWith('weather:kyiv');
     expect(weatherAPI.fetch).toHaveBeenCalledWith('Kyiv');
     expect(redisClient.setEx).toHaveBeenCalledWith(
-      'weather:Kyiv',
+      'weather:kyiv',
       expect.any(Number),
       JSON.stringify({ temp: 22 }),
     );
@@ -59,5 +63,14 @@ describe('WeatherService with Redis cache', () => {
     const data = await weatherService.getWeather('Kyiv');
 
     expect(data.temp).toBe(25);
+  });
+
+  it('should treat city names case-insensitively when checking cache', async () => {
+    redisClient.get.mockResolvedValue(JSON.stringify({ temp: 18 }));
+
+    const data = await weatherService.getWeather('kYIv');
+
+    expect(redisClient.get).toHaveBeenCalledWith('weather:kyiv');
+    expect(data.temp).toBe(18);
   });
 });

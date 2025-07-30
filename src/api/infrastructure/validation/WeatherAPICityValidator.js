@@ -1,6 +1,6 @@
-const AbstractCityValidator = require('../../domain/validation/AbstractCityValidator');
+const ICityValidator = require('../../domain/validation/ICityValidator');
 
-class WeatherAPICityValidator extends AbstractCityValidator {
+class WeatherAPICityValidator extends ICityValidator {
   async validateCity(city) {
     const apiKey = process.env.WEATHER_API_KEY;
     const url = `http://api.weatherapi.com/v1/search.json?key=${apiKey}&q=${city}`;
@@ -15,7 +15,9 @@ class WeatherAPICityValidator extends AbstractCityValidator {
 
       const data = await response.json();
 
-      if (!Array.isArray(data) || data.length === 0) return false;
+      if (!Array.isArray(data) || data.length === 0) {
+        return false;
+      }
 
       return true;
     } catch (error) {

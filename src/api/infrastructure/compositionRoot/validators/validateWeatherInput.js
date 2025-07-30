@@ -1,8 +1,8 @@
 const {
   createValidateWeatherInput,
 } = require('../../../presentation/middlewares/createValidateWeatherInput');
-const { createCityValidator } = require('./cityValidator');
+const { cityValidator } = require('./cityValidator');
 
-const validateWeatherInput = createValidateWeatherInput(createCityValidator());
+const validateWeatherInput = createValidateWeatherInput(cityValidator);
 
 module.exports = validateWeatherInput;
