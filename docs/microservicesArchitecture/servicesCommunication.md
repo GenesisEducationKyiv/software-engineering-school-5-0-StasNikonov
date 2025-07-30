@@ -27,6 +27,7 @@ The monolith will be decomposed into the following independent microservices:
 ### 3. **Weather Service**
 - **Responsibility:**
     - Retrieves current weather data from external APIs.
+    - Do the city's validation by using external APIs.
     - Caches data for reuse.
 - **Dependencies:**
     - External weather API (via HTTP)
@@ -35,7 +36,7 @@ The monolith will be decomposed into the following independent microservices:
 
 ---
 
-### 4. **Email Service**
+### 4. **Mailer Service**
 - **Responsibility:**
     - Sends confirmation, forecast, and unsubscribe emails.
     - Supports email templates.
@@ -50,17 +51,16 @@ The monolith will be decomposed into the following independent microservices:
 
 The optimal communication methods between services are as follows:
 
-| Source                | Destination           | Purpose                                                     | Protocol / Method      |
-|-----------------------|-----------------------|-------------------------------------------------------------|------------------------|
-| Client                | API Gateway           | Entry point for HTTP requests                               | **HTTP REST**          |
-| API Gateway           | Subscription Service  | Manage user subscriptions                                   | **gRPC**               |
-| API Gateway           | Weather Service       | Fetch weather info                                          | **gRPC**               |
-| Subscription  service | Email Service         | Send confirmation or unsubscribe email                      | **gRPC**               |
-| Subscription service  | Weather Service       | Validates the user-provided city by requesting weather data | **gRPC**               |
-| Weather Service       | External API          | Get weather forecast data                                   | **HTTP**               |
-| Weather Service       | Redis                 | Read/write cached weather data                              | **TCP / Redis client** |
-| Email Service         | Subscription Service  | Get confirmed subscribers for forecast emails               | **gRPC**               |
-| Email Service         | Weather Service       | Get weather data for each subscriber's city                 | **gRPC**               |
+| Source                | Destination          | Purpose                                                 | Protocol / Method      |
+|-----------------------|----------------------|---------------------------------------------------------|------------------------|
+| Client                | API Gateway          | Entry point for HTTP requests                           | **HTTP REST**          |
+| API Gateway           | Subscription Service | Manage user subscriptions                               | **gRPC**               |
+| API Gateway           | Weather Service      | Fetch weather info and validates the user-provided city | **gRPC**               |
+| Subscription  service | Mailer Service       | Send confirmation or unsubscribe email                  | **gRPC**               |
+| Weather Service       | External API         | Get weather forecast data                               | **HTTP**               |
+| Weather Service       | Redis                | Read/write cached weather data                          | **TCP / Redis client** |
+| Mailer Service        | Subscription Service | Get confirmed subscribers for forecast emails           | **gRPC**               |
+| Mailer Service        | Weather Service      | Get weather data for each subscriber's city             | **gRPC**               |
 
 ---
 
