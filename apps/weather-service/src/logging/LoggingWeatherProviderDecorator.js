@@ -6,11 +6,6 @@ class LoggingWeatherProviderDecorator {
     this.providerName = providerName;
   }
 
-  setNext(nextProvider) {
-    this.provider.setNext(nextProvider);
-    return this;
-  }
-
   async fetch(city) {
     const data = await this.provider.fetch(city);
     try {

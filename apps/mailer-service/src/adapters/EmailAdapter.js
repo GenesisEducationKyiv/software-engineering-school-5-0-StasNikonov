@@ -4,8 +4,8 @@ const {
 const { prepareEmailHtml } = require('../utils/prepareEmailHtml');
 
 class EmailAdapter {
-  constructor(provider) {
-    this.emailProvider = provider;
+  constructor(emailProvider) {
+    this.emailProvider = emailProvider;
   }
 
   async sendWeatherEmail(subscriber, weather) {

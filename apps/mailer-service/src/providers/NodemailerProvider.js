@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
-const EmailProvider = require('./IEmailProvider');
+const IEmailProvider = require('./IEmailProvider');
 
-class NodemailerProvider extends EmailProvider {
+class NodemailerProvider extends IEmailProvider {
   constructor() {
     super();
     this.transporter = nodemailer.createTransport({
