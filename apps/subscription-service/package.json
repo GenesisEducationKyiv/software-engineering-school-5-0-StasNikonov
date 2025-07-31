@@ -4,8 +4,9 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "test:unit": "jest --testPathPatterns=unit",
+    "test:integration": "jest --testPathPatterns=integration"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@testcontainers/postgresql": "^11.4.0",
+    "jest": "^30.0.5",
     "testcontainers": "^11.4.0"
   }
 }

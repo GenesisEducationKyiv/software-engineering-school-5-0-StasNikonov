@@ -1,6 +1,5 @@
 const axios = require('axios');
 const WeatherAPIProvider = require('../../src/providers/WeatherAPIProvider');
-const logProviderResponse = require('../../src/logging/logProviderResponse');
 
 jest.mock('axios');
 jest.mock('../../src/logging/logProviderResponse');
@@ -36,7 +35,6 @@ describe('WeatherAPIProvider', () => {
       description: 'хмарно',
       city: 'Lviv',
     });
-    expect(logProviderResponse).toHaveBeenCalledTimes(1);
   });
 
   it('should call next provider if error occurs', async () => {

@@ -1,21 +1,36 @@
-require('dotenv').config();
 const { createClient } = require('redis');
 
 const redisClient = createClient({
   socket: {
-    host: process.env.REDIS_HOST || '127.0.0.1',
-    port: parseInt(process.env.REDIS_PORT, 10) || 6379,
+    host: process.env.REDIS_HOST || 'localhost',
+    port: process.env.REDIS_PORT || 6379,
   },
 });
 
 redisClient.on('error', (err) => console.error('Redis Client Error', err));
 
-(async () => {
-  try {
-    await redisClient.connect();
-  } catch (error) {
-    console.error('Redis connection failed:', error);
+const connectWithRetry = async (retries = 5, delay = 2000) => {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      await redisClient.connect();
+      console.log('Redis connected');
+      return;
+    } catch (err) {
+      console.error(
+        `Attempt ${attempt} - Failed to connect to Redis:`,
+        err.message,
+      );
+
+      if (attempt < retries) {
+        console.log(`Retrying in ${delay}ms...`);
+        await new Promise((res) => setTimeout(res, delay));
+      } else {
+        console.error('Failed to connect to Redis');
+      }
+    }
   }
-})();
+};
+
+connectWithRetry();
 
 module.exports = redisClient;
