@@ -11,3 +11,6 @@ weatherapi.com/v1/current.json - Response: {"location":{"name":"Kyiv","region":"
 weatherapi.com/v1/current.json - Response: {"temperature":33.8,"humidity":20,"description":"Сонячно","city":"Kharkiv"}
 weatherapi.com/v1/current.json - Response: {"temperature":28.2,"humidity":48,"description":"Сонячно","city":"Messina"}
 weatherapi.com/v1/current.json - Response: {"temperature":21.9,"humidity":53,"description":"Хмарно","city":"Kyiv"}
+weatherapi.com/v1/current.json - Response: {"temperature":24.1,"humidity":46,"description":"Невелика хмарність","city":"Kyiv"}
+weatherapi.com/v1/current.json - Response: {"temperature":26.9,"humidity":38,"description":"Невелика хмарність","city":"Kyiv"}
+weatherapi.com/v1/current.json - Response: {"temperature":27.3,"humidity":39,"description":"Невелика хмарність","city":"Kyiv"}

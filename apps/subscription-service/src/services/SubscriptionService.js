@@ -1,9 +1,9 @@
 const { v4: uuidv4 } = require('uuid');
+const { publishToQueue } = require('../broker/publishToQueue');
 
 class SubscriptionService {
-  constructor(subscriptionRepository, mailerClient) {
+  constructor(subscriptionRepository) {
     this.subscriptionRepository = subscriptionRepository;
-    this.mailerClient = mailerClient;
   }
 
   async subscribe({ email, city, frequency }) {
@@ -21,19 +21,7 @@ class SubscriptionService {
       token,
     });
 
-    await new Promise((resolve, reject) => {
-      this.mailerClient.SendConfirmationEmail(
-        { email, city, token },
-        (err, res) => {
-          if (err) {
-            console.error('gRPC call failed:', err.message);
-            return reject(err);
-          }
-          console.log('gRPC response:', res);
-          resolve(res);
-        },
-      );
-    });
+    publishToQueue('send_confirmation_email', { email, city, token });
 
     return {
       status: 200,

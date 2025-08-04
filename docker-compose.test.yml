@@ -6,12 +6,12 @@ services:
     depends_on:
       - redis
     environment:
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      WEATHER_API_KEY: test-weather-key
-      WEATHER_API_BASE_URL: https://test-weather-api.com
-      OWM_API_KEY: test-owm-key
-      OWM_API_BASE_URL: https://test-owm-api.com
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      WEATHER_API_KEY: ${WEATHER_API_KEY}
+      WEATHER_API_BASE_URL: ${WEATHER_API_BASE_URL}
+      OWM_API_KEY: ${OWM_API_KEY}
+      OWM_API_BASE_URL: ${OWM_API_BASE_URL}
     networks:
       - backend
     volumes:
@@ -22,25 +22,30 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: postgres
-      DB_PASS: test_pass
-      DB_NAME: test_db
-      MAILER_SERVICE_ADDRESS: mailer-service:50053
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME}
+      RABBITMQ_URL: ${RABBITMQ_URL}
     networks:
       - backend
     volumes:
       - ./apps/proto:/proto
 
-  mailer-service:
-    build: ./apps/mailer-service
+  notification-service:
+    build: apps/notification-service
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     environment:
-      EMAIL_USER: test@example.com
-      EMAIL_PASS: testpass
-      WEATHER_SERVICE_ADDRESS: weather-service:50051
-      SUBSCRIPTION_SERVICE_ADDRESS: subscription-service:50052
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASS: ${EMAIL_PASS}
+      WEATHER_SERVICE_ADDRESS: ${WEATHER_SERVICE_ADDRESS}
+      RABBITMQ_URL: ${RABBITMQ_URL}
     networks:
       - backend
     volumes:
@@ -53,12 +58,11 @@ services:
     depends_on:
       - weather-service
       - subscription-service
-      - mailer-service
+      - notification-service
     environment:
-      APIGATEWAY_PORT: 3001
-      WEATHER_SERVICE_ADDRESS: weather-service:50051
-      SUBSCRIPTION_SERVICE_ADDRESS: subscription-service:50052
-      MAILER_SERVICE_ADDRESS: mailer-service:50053
+      APIGATEWAY_PORT: ${APIGATEWAY_PORT}
+      WEATHER_SERVICE_ADDRESS: ${WEATHER_SERVICE_ADDRESS}
+      SUBSCRIPTION_SERVICE_ADDRESS: ${SUBSCRIPTION_SERVICE_ADDRESS}
     networks:
       - backend
     volumes:
@@ -70,9 +74,9 @@ services:
     ports:
       - '5432:5432'
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: test_pass
-      POSTGRES_DB: test_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - pgdata-test:/var/lib/postgresql/data
     networks:
@@ -91,6 +95,22 @@ services:
     networks:
       - backend
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    networks:
+      - backend
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   e2e-tests:
     build:
       context: .
@@ -100,7 +120,7 @@ services:
     networks:
       - backend
     environment:
-      PLAYWRIGHT_TEST_BASE_URL: http://api-gateway:3001
+      PLAYWRIGHT_TEST_BASE_URL: ${PLAYWRIGHT_TEST_BASE_URL}
     volumes:
       - ./test/e2e:/app/test/e2e
 
