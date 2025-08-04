@@ -1,8 +1,12 @@
+jest.mock('../../src/broker/publishToQueue', () => ({
+  publishToQueue: jest.fn(),
+}));
+
+const { publishToQueue } = require('../../src/broker/publishToQueue');
 const SubscriptionService = require('../../src/services/SubscriptionService');
 
 describe('SubscriptionService', () => {
   let subscriptionRepositoryMock;
-  let mailerClientMock;
   let service;
 
   beforeEach(() => {
@@ -15,14 +19,9 @@ describe('SubscriptionService', () => {
       getConfirmedByFrequency: jest.fn(),
     };
 
-    mailerClientMock = {
-      SendConfirmationEmail: jest.fn(),
-    };
+    service = new SubscriptionService(subscriptionRepositoryMock);
 
-    service = new SubscriptionService(
-      subscriptionRepositoryMock,
-      mailerClientMock,
-    );
+    jest.clearAllMocks();
   });
 
   describe('subscribe', () => {
@@ -34,17 +33,15 @@ describe('SubscriptionService', () => {
         city: 'Kyiv',
         frequency: 'daily',
       });
+
       expect(result.status).toBe(409);
       expect(result.message).toBe('Email already exists');
+      expect(publishToQueue).not.toHaveBeenCalled();
     });
 
-    it('Create subscription and send email', async () => {
+    it('creates subscription and publishes confirmation email command', async () => {
       subscriptionRepositoryMock.findSubscription.mockResolvedValue(null);
       subscriptionRepositoryMock.createSubscription.mockResolvedValue();
-
-      mailerClientMock.SendConfirmationEmail.mockImplementation((data, cb) =>
-        cb(null, 'ok'),
-      );
 
       const result = await service.subscribe({
         email: 'test@gmail.com',
@@ -63,13 +60,13 @@ describe('SubscriptionService', () => {
         }),
       );
 
-      expect(mailerClientMock.SendConfirmationEmail).toHaveBeenCalledWith(
+      expect(publishToQueue).toHaveBeenCalledWith(
+        'send_confirmation_email',
         expect.objectContaining({
           email: 'test@gmail.com',
           city: 'Kyiv',
           token: expect.any(String),
         }),
-        expect.any(Function),
       );
 
       expect(result.status).toBe(200);
@@ -77,48 +74,32 @@ describe('SubscriptionService', () => {
         'Subscription successful. Confirmation email sent.',
       );
     });
-
-    it('Error if sending the letter is unsuccessful', async () => {
-      subscriptionRepositoryMock.findSubscription.mockResolvedValue(null);
-      subscriptionRepositoryMock.createSubscription.mockResolvedValue();
-
-      mailerClientMock.SendConfirmationEmail.mockImplementation((data, cb) =>
-        cb(new Error('gRPC failure'), null),
-      );
-
-      await expect(
-        service.subscribe({
-          email: 'test@gmail.com',
-          city: 'Kyiv',
-          frequency: 'daily',
-        }),
-      ).rejects.toThrow('gRPC failure');
-    });
   });
 
   describe('confirm', () => {
-    it('return 404 if token not found', async () => {
+    it('returns 404 if token not found', async () => {
       subscriptionRepositoryMock.findByToken.mockResolvedValue(null);
 
       const result = await service.confirm({ token: 'token123' });
+
       expect(result.status).toBe(404);
       expect(result.message).toBe('Token not found');
     });
 
-    it('return 409 if already confirmed', async () => {
+    it('returns 409 if already confirmed', async () => {
       subscriptionRepositoryMock.findByToken.mockResolvedValue({
         confirmed: true,
       });
 
       const result = await service.confirm({ token: 'token123' });
+
       expect(result.status).toBe(409);
       expect(result.message).toBe('Already confirmed');
     });
 
-    it('Successfully confirmed', async () => {
+    it('successfully confirms subscription', async () => {
       const subscription = { confirmed: false };
       subscriptionRepositoryMock.findByToken.mockResolvedValue(subscription);
-      subscriptionRepositoryMock.confirmSubscription.mockResolvedValue();
 
       const result = await service.confirm({ token: 'token123' });
 
@@ -131,18 +112,18 @@ describe('SubscriptionService', () => {
   });
 
   describe('unsubscribe', () => {
-    it('return 404 if token not found', async () => {
+    it('returns 404 if token not found', async () => {
       subscriptionRepositoryMock.findByToken.mockResolvedValue(null);
 
       const result = await service.unsubscribe({ token: 'token123' });
+
       expect(result.status).toBe(404);
       expect(result.message).toBe('Token not found');
     });
 
-    it('Successfully unsubscribed', async () => {
+    it('successfully unsubscribes', async () => {
       const subscription = {};
       subscriptionRepositoryMock.findByToken.mockResolvedValue(subscription);
-      subscriptionRepositoryMock.deleteSubscription.mockResolvedValue();
 
       const result = await service.unsubscribe({ token: 'token123' });
 
@@ -155,7 +136,7 @@ describe('SubscriptionService', () => {
   });
 
   describe('getConfirmedByFrequency', () => {
-    it('Returns subscriptions by frequency', async () => {
+    it('returns subscriptions by frequency', async () => {
       const subs = [{ email: 'test@gmail.com' }];
       subscriptionRepositoryMock.getConfirmedByFrequency.mockResolvedValue(
         subs,
