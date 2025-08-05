@@ -16,6 +16,7 @@ services:
       - backend
     volumes:
       - ./apps/proto:/proto
+      - ./apps/shared:/shared
 
   subscription-service:
     build: ./apps/subscription-service
@@ -35,6 +36,7 @@ services:
       - backend
     volumes:
       - ./apps/proto:/proto
+      - ./apps/shared:/shared
 
   notification-service:
     build: apps/notification-service
@@ -50,6 +52,7 @@ services:
       - backend
     volumes:
       - ./apps/proto:/proto
+      - ./apps/shared:/shared
 
   api-gateway:
     build: ./apps/api-gateway
@@ -67,6 +70,7 @@ services:
       - backend
     volumes:
       - ./apps/proto:/proto
+      - ./apps/shared:/shared
 
   postgres:
     image: postgres:14

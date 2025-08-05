@@ -1,5 +1,5 @@
 const connectRabbit = require('./connectRabbit');
-const logger = require('../../../../shared/logger/index');
+const logger = require('../../../shared/logger/index');
 
 const publishToQueue = async (queue, message) => {
   const channel = await connectRabbit();

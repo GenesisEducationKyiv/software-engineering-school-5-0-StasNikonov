@@ -1,4 +1,4 @@
-const logger = require('../../../../shared/logger/index.js');
+const logger = require('../../../shared/logger/index.js');
 
 function consumeQueue(channel, queueName, handler) {
   channel.consume(queueName, async (msg) => {

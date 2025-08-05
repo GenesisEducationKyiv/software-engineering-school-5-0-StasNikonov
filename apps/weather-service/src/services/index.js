@@ -7,7 +7,7 @@ const redisClient = require('../redis/redisClient');
 const { cityValidator } = require('../validation/cityValidator');
 const formatWeatherResponse = require('../utils/formatResponse');
 const { cacheHits, cacheMisses } = require('../metrics/metrics');
-const logger = require('../../../../shared/logger/index');
+const logger = require('../../../shared/logger/index');
 
 const weatherAPIProvider = new LoggingWeatherProviderDecorator(
   new WeatherAPIProvider(logger),
