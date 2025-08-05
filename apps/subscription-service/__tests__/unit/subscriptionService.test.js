@@ -1,12 +1,11 @@
-jest.mock('../../src/broker/publishToQueue', () => ({
-  publishToQueue: jest.fn(),
-}));
+jest.mock('../../src/broker/publishToQueue', () => jest.fn());
 
-const { publishToQueue } = require('../../src/broker/publishToQueue');
+const publishToQueue = require('../../src/broker/publishToQueue');
 const SubscriptionService = require('../../src/services/SubscriptionService');
 
 describe('SubscriptionService', () => {
   let subscriptionRepositoryMock;
+  let loggerMock;
   let service;
 
   beforeEach(() => {
@@ -19,7 +18,14 @@ describe('SubscriptionService', () => {
       getConfirmedByFrequency: jest.fn(),
     };
 
-    service = new SubscriptionService(subscriptionRepositoryMock);
+    loggerMock = {
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+      debug: jest.fn(),
+    };
+
+    service = new SubscriptionService(subscriptionRepositoryMock, loggerMock);
 
     jest.clearAllMocks();
   });

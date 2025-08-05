@@ -28,7 +28,7 @@ class SubscriptionService {
     });
     this.logger.info(`Subscription created`);
 
-    publishToQueue('send_confirmation_email', { email, city, token });
+    await publishToQueue('send_confirmation_email', { email, city, token });
     this.logger.debug(`Published confirmation email task to queue`);
 
     return {

@@ -6,7 +6,8 @@ jest.mock('../../src/logging/logProviderResponse');
 
 describe('OpenWeatherMapProvider', () => {
   const city = 'Kyiv';
-  const provider = new OpenWeatherMapProvider();
+  const loggerMock = { error: jest.fn() };
+  const provider = new OpenWeatherMapProvider(loggerMock);
 
   beforeEach(() => {
     jest.clearAllMocks();
