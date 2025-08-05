@@ -1,6 +1,7 @@
 class ChainWeatherProvider {
-  constructor(providers) {
+  constructor(providers, logger) {
     this.providers = providers;
+    this.logger = logger;
   }
 
   async fetch(city) {
@@ -10,7 +11,7 @@ class ChainWeatherProvider {
         return await provider.fetch(city);
       } catch (err) {
         lastError = err;
-        console.warn(`Provider failed: ${err.message}, trying next...`);
+        this.logger.warn(`Provider failed: ${err.message}, trying next...`);
       }
     }
     throw lastError || new Error('No providers available');
