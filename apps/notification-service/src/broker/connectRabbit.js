@@ -1,5 +1,5 @@
 const amqp = require('amqplib');
-const logger = require('../../../shared/logger/index');
+const logger = require('shared');
 
 const connectRabbit = async (retries = 5, delayMs = 2000) => {
   for (let i = 0; i < retries; i++) {
