@@ -2,10 +2,8 @@ services:
   test_db:
     image: postgres:14
     container_name: test_weather_db
-    environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASS}
+    env_file:
+      - .env.test
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "${DB_USER}"]
       interval: 5s
