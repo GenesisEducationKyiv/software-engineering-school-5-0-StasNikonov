@@ -18,9 +18,12 @@ jobs:
         with:
           node-version: 24
 
-      - name: Install dependencies
+      - name: Install root dependencies
+        run: npm install
+
+      - name: Install service dependencies
         working-directory: apps/${{ matrix.service }}
-        run: npm ci
+        run: npm install
 
       - name: Run unit tests
         working-directory: apps/${{ matrix.service }}

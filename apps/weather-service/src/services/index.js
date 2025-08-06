@@ -6,8 +6,8 @@ const WeatherService = require('./WeatherService');
 const redisClient = require('../redis/redisClient');
 const { cityValidator } = require('../validation/cityValidator');
 const formatWeatherResponse = require('../utils/formatResponse');
-const { cacheHits, cacheMisses } = require('../metrics/metrics');
-const logger = require('shared');
+const metrics = require('../metrics/MetricsService');
+const logger = require('../../../../shared/logger/index');
 
 const weatherAPIProvider = new LoggingWeatherProviderDecorator(
   new WeatherAPIProvider(logger),
@@ -29,8 +29,8 @@ const weatherService = new WeatherService(
   formatWeatherResponse,
   cityValidator,
   redisClient,
-  cacheHits,
-  cacheMisses,
+  logger,
+  metrics,
 );
 
 module.exports = weatherService;

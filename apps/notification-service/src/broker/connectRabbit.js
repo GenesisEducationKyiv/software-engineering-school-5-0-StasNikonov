@@ -1,11 +1,11 @@
 const amqp = require('amqplib');
-const logger = require('shared');
+const logger = require('../../../../shared/logger/index');
 
-const connectRabbit = async (retries = 5, delayMs = 2000) => {
+const connectRabbit = async (retries = 10, delayMs = 5000) => {
   for (let i = 0; i < retries; i++) {
     try {
       const connection = await amqp.connect(
-        process.env.RABBITMQ_URL || 'amqp://127.0.0.1',
+        process.env.RABBITMQ_URL || 'amqp://rabbitmq:5672',
       );
       const channel = await connection.createChannel();
 
