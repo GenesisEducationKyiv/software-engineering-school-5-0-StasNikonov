@@ -5,25 +5,12 @@ class OpenWeatherCityValidator extends AbstractCityValidator {
     const apiKey = process.env.OWM_API_KEY;
     const url = `http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${apiKey}`;
 
-    try {
-      const response = await fetch(url);
+    const response = await fetch(url);
+    if (!response.ok)
+      throw new Error(`OpenWeatherMap status ${response.status}`);
 
-      if (!response.ok) {
-        console.warn(`OpenWeatherMap returned status ${response.status}`);
-        return false;
-      }
-
-      const data = await response.json();
-
-      if (!Array.isArray(data) || data.length === 0) {
-        return false;
-      }
-
-      return true;
-    } catch (error) {
-      console.error('OpenWeatherMap validation error:', error.message);
-      return false;
-    }
+    const data = await response.json();
+    return Array.isArray(data) && data.length > 0;
   }
 }
 
