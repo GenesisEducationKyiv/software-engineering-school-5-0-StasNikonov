@@ -2,6 +2,8 @@ const axios = require('axios');
 const AbstractWeatherProvider = require('./AbstractWeatherProvider');
 
 class WeatherAPIProvider extends AbstractWeatherProvider {
+  static BASE_URL = 'http://api.weatherapi.com/v1/current.json';
+
   async fetch(city) {
     const apiKey = process.env.WEATHER_API_KEY;
     const url = `http://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${city}&lang=uk`;
@@ -17,7 +19,7 @@ class WeatherAPIProvider extends AbstractWeatherProvider {
         city: data.location.name,
       };
     } catch (error) {
-      console.error('❌ WeatherAPI error:', error.message);
+      console.error('WeatherAPI error:', error.message);
       if (this.next) {
         return this.next.fetch(city);
       }

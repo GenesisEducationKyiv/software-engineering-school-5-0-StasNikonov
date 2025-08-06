@@ -6,12 +6,12 @@ const WeatherService = require('./WeatherService');
 
 const weatherAPIProvider = new LoggingWeatherProviderDecorator(
   new WeatherAPIProvider(),
-  'weatherapi.com/v1/current.json',
+  WeatherAPIProvider.BASE_URL,
 );
 
 const openWeatherMapProvider = new LoggingWeatherProviderDecorator(
   new OpenWeatherMapProvider(),
-  'openweathermap.org/data',
+  OpenWeatherMapProvider.BASE_URL,
 );
 
 const chainProvider = new ChainWeatherProvider([
