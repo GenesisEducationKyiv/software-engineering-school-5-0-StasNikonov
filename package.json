@@ -9,9 +9,9 @@
     "test:unit": "jest __tests__/unit",
     "test:integration": "jest __tests__/integration",
     "test:e2e": "playwright test",
-    "test:unit:docker": "docker-compose --env-file .env.test -f docker-compose.test.yml run --rm test_runner npm run test:unit",
-    "test:integration:docker": "docker-compose --env-file .env.test -f docker-compose.test.yml run --rm test_runner npm run test:integration",
-    "test:e2e:docker": "docker-compose --env-file .env.test -f docker-compose.test.yml run --rm playwright_runner npm run test:e2e",
+    "test:unit:docker": "docker-compose -f docker-compose.test.yml run --rm test_runner npm run test:unit",
+    "test:integration:docker": "docker-compose -f docker-compose.test.yml run --rm test_runner npm run test:integration",
+    "test:e2e:docker": "docker-compose -f docker-compose.test.yml run --rm playwright_runner npm run test:e2e",
     "test:clean": "docker-compose -f docker-compose.test.yml down -v",
     "lint": "eslint ."
   },

@@ -2,8 +2,10 @@ services:
   test_db:
     image: postgres:14
     container_name: test_weather_db
-    env_file:
-      - .env.test
+    environment:
+      POSTGRES_DB: test_weather
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test_pass
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "postgres"]
       interval: 5s
