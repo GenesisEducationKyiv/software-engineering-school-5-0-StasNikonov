@@ -9,8 +9,8 @@ describe('WeatherService', () => {
   let weatherProvider;
   let dataFormatter;
   let cityValidator;
-  let cacheHits;
-  let cacheMisses;
+  let logger;
+  let metrics;
   let service;
 
   beforeEach(() => {
@@ -21,16 +21,23 @@ describe('WeatherService', () => {
       get: jest.fn(),
       setEx: jest.fn(),
     };
-    cacheHits = { inc: jest.fn() };
-    cacheMisses = { inc: jest.fn() };
+    logger = { info: jest.fn(), error: jest.fn() };
+    metrics = {
+      incCacheHits: jest.fn(),
+      incCacheMisses: jest.fn(),
+      incWeatherRequests: jest.fn(),
+      startWeatherTimer: jest.fn(() => jest.fn()),
+      incValidateCityRequests: jest.fn(),
+      incValidateCityError: jest.fn(),
+    };
 
     service = new WeatherService(
       weatherProvider,
       dataFormatter,
       cityValidator,
       redisClient,
-      cacheHits,
-      cacheMisses,
+      logger,
+      metrics,
     );
   });
 
@@ -40,7 +47,7 @@ describe('WeatherService', () => {
     const result = await service.getWeather(city);
 
     expect(redisClient.get).toHaveBeenCalledWith('weather:lviv');
-    expect(cacheHits.inc).toHaveBeenCalled();
+    expect(metrics.incCacheHits).toHaveBeenCalled();
     expect(result).toEqual(formattedData);
     expect(weatherProvider.fetch).not.toHaveBeenCalled();
   });
@@ -52,7 +59,7 @@ describe('WeatherService', () => {
 
     const result = await service.getWeather(city);
 
-    expect(cacheMisses.inc).toHaveBeenCalled();
+    expect(metrics.incCacheMisses).toHaveBeenCalled();
     expect(weatherProvider.fetch).toHaveBeenCalledWith(city);
     expect(redisClient.setEx).toHaveBeenCalledWith(
       'weather:lviv',

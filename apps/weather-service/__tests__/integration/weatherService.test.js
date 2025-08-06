@@ -13,6 +13,20 @@ describe('WeatherService Integration Test (with Redis)', () => {
       .mockResolvedValue({ temp: 25, city: 'Lviv', condition: 'rainy' }),
   };
 
+  const mockLogger = {
+    info: jest.fn(),
+    error: jest.fn(),
+  };
+
+  const mockMetrics = {
+    incWeatherRequests: jest.fn(),
+    startWeatherTimer: jest.fn(() => jest.fn()),
+    incCacheHits: jest.fn(),
+    incCacheMisses: jest.fn(),
+    incValidateCityRequests: jest.fn(),
+    incValidateCityError: jest.fn(),
+  };
+
   const mockFormatter = jest.fn((data) => ({
     city: data.city,
     temperature: data.temp,
@@ -22,9 +36,6 @@ describe('WeatherService Integration Test (with Redis)', () => {
   const mockValidator = {
     validateCity: jest.fn().mockResolvedValue(true),
   };
-
-  const cacheHits = { inc: jest.fn() };
-  const cacheMisses = { inc: jest.fn() };
 
   beforeAll(async () => {
     redisContainer = await new GenericContainer('redis')
@@ -45,8 +56,8 @@ describe('WeatherService Integration Test (with Redis)', () => {
       mockFormatter,
       mockValidator,
       redisClient,
-      cacheHits,
-      cacheMisses,
+      mockLogger,
+      mockMetrics,
     );
   });
 
@@ -64,8 +75,8 @@ describe('WeatherService Integration Test (with Redis)', () => {
     const result = await weatherService.getWeather('Lviv');
 
     expect(mockProvider.fetch).toHaveBeenCalledTimes(1);
-    expect(cacheMisses.inc).toHaveBeenCalledTimes(1);
-    expect(cacheHits.inc).not.toHaveBeenCalled();
+    expect(mockMetrics.incCacheMisses).toHaveBeenCalledTimes(1);
+    expect(mockMetrics.incCacheHits).not.toHaveBeenCalled();
     expect(mockFormatter).toHaveBeenCalledTimes(2);
     expect(result).toEqual({
       city: 'Lviv',
@@ -91,8 +102,8 @@ describe('WeatherService Integration Test (with Redis)', () => {
     const result = await weatherService.getWeather('Lviv');
 
     expect(mockProvider.fetch).not.toHaveBeenCalled();
-    expect(cacheHits.inc).toHaveBeenCalledTimes(1);
-    expect(cacheMisses.inc).not.toHaveBeenCalled();
+    expect(mockMetrics.incCacheHits).toHaveBeenCalledTimes(1);
+    expect(mockMetrics.incCacheMisses).not.toHaveBeenCalled();
     expect(result).toEqual({
       city: 'Lviv',
       temperature: 30,

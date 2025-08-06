@@ -6,6 +6,7 @@ const SubscriptionService = require('../../src/services/SubscriptionService');
 describe('SubscriptionService', () => {
   let subscriptionRepositoryMock;
   let loggerMock;
+  let metricsMock;
   let service;
 
   beforeEach(() => {
@@ -25,7 +26,23 @@ describe('SubscriptionService', () => {
       debug: jest.fn(),
     };
 
-    service = new SubscriptionService(subscriptionRepositoryMock, loggerMock);
+    metricsMock = {
+      startSubscriptionCreateTimer: jest.fn(() => jest.fn()),
+      startSubscriptionConfirmTimer: jest.fn(() => jest.fn()),
+      startSubscriptionUnsubscribeTimer: jest.fn(() => jest.fn()),
+      incErrorCreated: jest.fn(),
+      incSuccessCreated: jest.fn(),
+      incErrorConfirmed: jest.fn(),
+      incSuccessConfirmed: jest.fn(),
+      incErrorUnsubscribed: jest.fn(),
+      incSuccessUnsubscribed: jest.fn(),
+    };
+
+    service = new SubscriptionService(
+      subscriptionRepositoryMock,
+      loggerMock,
+      metricsMock,
+    );
 
     jest.clearAllMocks();
   });
