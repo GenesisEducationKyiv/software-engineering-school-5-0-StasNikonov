@@ -1,4 +1,4 @@
-jest.mock('shared', () => ({
+jest.mock('../../../../shared/logger/index', () => ({
   info: jest.fn(),
   warn: jest.fn(),
   error: jest.fn(),
