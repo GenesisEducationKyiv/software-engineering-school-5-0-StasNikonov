@@ -3,11 +3,11 @@ services:
     image: postgres:14
     container_name: test_weather_db
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: test_weather
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test_pass
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "${DB_USER}"]
+      test: ["CMD", "pg_isready", "-U", "postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -21,19 +21,8 @@ services:
       context: .
       dockerfile: Dockerfile.test
     container_name: test_runner
-    environment:
-      NODE_ENV: test
-      DB_HOST: test_db
-      DB_PORT: 5432
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASS}
-      WEATHER_API_KEY: ${WEATHER_API_KEY}
-      OWM_API_KEY: ${OWM_API_KEY}
-      EMAIL_USER: ${EMAIL_USER}
-      EMAIL_PASS: ${EMAIL_PASS}
-      REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: ${REDIS_PORT}
+    env_file:
+      - .env.test
     depends_on:
       test_db:
         condition: service_healthy
@@ -52,19 +41,8 @@ services:
       context: .
       dockerfile: Dockerfile.playwright
     container_name: playwright_runner
-    environment:
-      NODE_ENV: test
-      DB_HOST: test_db
-      DB_PORT: 5432
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASS}
-      WEATHER_API_KEY: ${WEATHER_API_KEY}
-      OWM_API_KEY: ${OWM_API_KEY}
-      EMAIL_USER: ${EMAIL_USER}
-      EMAIL_PASS: ${EMAIL_PASS}
-      REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: ${REDIS_PORT}
+    env_file:
+      - .env.test
     depends_on:
       test_db:
         condition: service_healthy
@@ -76,13 +54,8 @@ services:
       context: .
       dockerfile: Dockerfile.test
     container_name: test_migrator
-    environment:
-      NODE_ENV: test
-      DB_HOST: test_db
-      DB_PORT: 5432
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASS}
+    env_file:
+      - .env.test
     depends_on:
       test_db:
         condition: service_healthy

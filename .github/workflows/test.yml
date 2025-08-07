@@ -9,30 +9,36 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Build test images
+        run: docker compose -f docker-compose.test.yml build --no-cache
+
       - name: Run Unit Tests
-        run: docker compose --env-file .env.test -f docker-compose.test.yml run --rm test_runner npm run test:unit
+        run: docker compose -f docker-compose.test.yml run --rm test_runner npm run test:unit
 
   integration_tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
-      - name: Start database and redis
-        run: docker compose --env-file .env.test -f docker-compose.test.yml up -d test_db test_redis
+      - name: Build test images
+        run: docker compose -f docker-compose.test.yml build --no-cache
+
+      - name: Start database
+        run: docker compose -f docker-compose.test.yml up -d test_db
 
       - name: Run DB migrations
-        run: docker compose --env-file .env.test -f docker-compose.test.yml run --rm test_runner npx sequelize-cli db:migrate --config src/db/config/config.js
+        run: docker compose -f docker-compose.test.yml run --rm test_runner npx sequelize-cli db:migrate --config src/db/config/config.js
 
       - name: Run Integration Tests
-        run: docker compose --env-file .env.test -f docker-compose.test.yml run --rm test_runner npm run test:integration
+        run: docker compose -f docker-compose.test.yml run --rm test_runner npm run test:integration
 
   e2e_tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
-      - name: Start redis
-        run: docker compose --env-file .env.test -f docker-compose.test.yml up -d test_redis
+      - name: Build test images
+        run: docker compose -f docker-compose.test.yml build --no-cache
 
       - name: Run E2E Tests
-        run: docker compose --env-file .env.test -f docker-compose.test.yml run --rm playwright_runner npm run test:e2e
+        run: docker compose -f docker-compose.test.yml run --rm playwright_runner npm run test:e2e

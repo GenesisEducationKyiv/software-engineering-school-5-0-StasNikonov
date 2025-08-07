@@ -1,9 +1,9 @@
 const validateSubscriptionInput = require('../../../src/api/infrastructure/compositionRoot/validators/validateSubscriptionInput');
 const {
   cityValidator,
-} = require('../../api/infrastructure/compositionRoot/validators/cityValidator');
+} = require('../../api/presentation/validation/cityValidator');
 
-jest.mock('../../api/infrastructure/compositionRoot/validators/cityValidator');
+jest.mock('../../api/presentation/validation/cityValidator');
 
 describe('createValidateSubscriptionInput middleware', () => {
   const mockIsValidEmail = jest.fn();

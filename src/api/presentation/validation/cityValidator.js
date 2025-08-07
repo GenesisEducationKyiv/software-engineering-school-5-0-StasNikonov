@@ -1,6 +1,6 @@
-const WeatherAPICityValidator = require('../../validation/WeatherAPICityValidator');
-const OpenWeatherCityValidator = require('../../validation/OpenWeatherCityValidator');
-const CityValidationChain = require('../../../application/validation/ChainCityValidation');
+const WeatherAPICityValidator = require('./WeatherAPICityValidator');
+const OpenWeatherCityValidator = require('./OpenWeatherCityValidator');
+const CityValidationChain = require('./ChainCityValidation');
 
 const weatherAPICityValidator = new WeatherAPICityValidator();
 const openWeatherCityValidator = new OpenWeatherCityValidator();
