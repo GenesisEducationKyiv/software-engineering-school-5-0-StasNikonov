@@ -7,13 +7,8 @@ services:
       - '50051:50051'
     depends_on:
       - redis
-    environment:
-      REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: ${REDIS_PORT}
-      WEATHER_API_KEY: ${WEATHER_API_KEY}
-      WEATHER_API_BASE_URL: ${WEATHER_API_BASE_URL}
-      OWM_API_KEY: ${OWM_API_KEY}
-      OWM_API_BASE_URL: ${OWM_API_BASE_URL}
+    env_file:
+      - .env
     networks:
       - backend
     volumes:
@@ -25,13 +20,8 @@ services:
       - '50052:50052'
     depends_on:
       - postgres
-    environment:
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
-      DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASS}
-      DB_NAME: ${DB_NAME}
-      MAILER_SERVICE_ADDRESS: ${MAILER_SERVICE_ADDRESS}
+    env_file:
+      - .env
     networks:
       - backend
     volumes:
@@ -41,11 +31,8 @@ services:
     build: ./apps/mailer-service
     ports:
       - '50053:50053'
-    environment:
-      EMAIL_USER: ${EMAIL_USER}
-      EMAIL_PASS: ${EMAIL_PASS}
-      WEATHER_SERVICE_ADDRESS: ${WEATHER_SERVICE_ADDRESS}
-      SUBSCRIPTION_SERVICE_ADDRESS: ${SUBSCRIPTION_SERVICE_ADDRESS}
+    env_file:
+      - .env
     networks:
       - backend
     volumes:
@@ -59,11 +46,8 @@ services:
       - subscription-service
       - weather-service
       - mailer-service
-    environment:
-      APIGATEWAY_PORT: ${APIGATEWAY_PORT}
-      SUBSCRIPTION_SERVICE_ADDRESS: ${SUBSCRIPTION_SERVICE_ADDRESS}
-      WEATHER_SERVICE_ADDRESS: ${WEATHER_SERVICE_ADDRESS}
-      MAILER_SERVICE_ADDRESS: ${MAILER_SERVICE_ADDRESS}
+    env_file:
+      - .env
     networks:
       - backend
     volumes:

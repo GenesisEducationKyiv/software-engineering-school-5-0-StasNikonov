@@ -3,4 +3,4 @@ node_modules/
 .env
 .DS_Store
 apps/weather-service/src/logging/logs
-test-results/
+test-results

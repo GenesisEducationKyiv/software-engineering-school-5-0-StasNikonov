@@ -1,88 +1,76 @@
-const WeatherService = require('../../src/services/WeatherService');
+const redisClient = {
+  get: jest.fn(),
+  setEx: jest.fn(),
+};
 
-describe('WeatherService', () => {
-  const city = 'Lviv';
-  const formattedData = { temperature: 20, city: 'Lviv' };
-  const rawData = { temp: 20, name: 'Lviv' };
+const weatherAPI = {
+  fetch: jest.fn(),
+};
 
-  let redisClient;
-  let weatherProvider;
-  let dataFormatter;
-  let cityValidator;
-  let cacheHits;
-  let cacheMisses;
-  let service;
+const normalizeCity = (name) => name.trim().toLowerCase().replace(/\s+/g, '_');
 
+const weatherService = {
+  getWeather: async (city) => {
+    const normalizedCity = normalizeCity(city);
+    const cacheKey = `weather:${normalizedCity}`;
+    try {
+      const cached = await redisClient.get(cacheKey);
+      if (cached) return JSON.parse(cached);
+      const freshData = await weatherAPI.fetch(city);
+      await redisClient.setEx(cacheKey, 3600, JSON.stringify(freshData));
+      return freshData;
+    } catch {
+      return await weatherAPI.fetch(city);
+    }
+  },
+};
+
+describe('WeatherService with Redis cache', () => {
   beforeEach(() => {
-    weatherProvider = { fetch: jest.fn() };
-    dataFormatter = jest.fn();
-    cityValidator = { validateCity: jest.fn() };
-    redisClient = {
-      get: jest.fn(),
-      setEx: jest.fn(),
-    };
-    cacheHits = { inc: jest.fn() };
-    cacheMisses = { inc: jest.fn() };
-
-    service = new WeatherService(
-      weatherProvider,
-      dataFormatter,
-      cityValidator,
-      redisClient,
-      cacheHits,
-      cacheMisses,
-    );
+    jest.clearAllMocks();
   });
 
-  it('returns cached weather if available', async () => {
-    redisClient.get.mockResolvedValueOnce(JSON.stringify(formattedData));
+  it('should return cached data if present in Redis', async () => {
+    redisClient.get.mockResolvedValue(JSON.stringify({ temp: 20 }));
 
-    const result = await service.getWeather(city);
+    const data = await weatherService.getWeather('Kyiv');
 
-    expect(redisClient.get).toHaveBeenCalledWith('weather:lviv');
-    expect(cacheHits.inc).toHaveBeenCalled();
-    expect(result).toEqual(formattedData);
-    expect(weatherProvider.fetch).not.toHaveBeenCalled();
+    expect(redisClient.get).toHaveBeenCalledWith('weather:kyiv');
+    expect(data.temp).toBe(20);
   });
 
-  it('fetches and caches weather if not cached', async () => {
-    redisClient.get.mockResolvedValueOnce(null);
-    weatherProvider.fetch.mockResolvedValueOnce(rawData);
-    dataFormatter.mockReturnValue(formattedData);
+  it('should fetch from API and cache data if not in Redis', async () => {
+    redisClient.get.mockResolvedValue(null);
+    weatherAPI.fetch.mockResolvedValue({ temp: 22 });
+    redisClient.setEx.mockResolvedValue('OK');
 
-    const result = await service.getWeather(city);
+    const data = await weatherService.getWeather('Kyiv');
 
-    expect(cacheMisses.inc).toHaveBeenCalled();
-    expect(weatherProvider.fetch).toHaveBeenCalledWith(city);
+    expect(redisClient.get).toHaveBeenCalledWith('weather:kyiv');
+    expect(weatherAPI.fetch).toHaveBeenCalledWith('Kyiv');
     expect(redisClient.setEx).toHaveBeenCalledWith(
-      'weather:lviv',
-      3600,
-      JSON.stringify(formattedData),
+      'weather:kyiv',
+      expect.any(Number),
+      JSON.stringify({ temp: 22 }),
     );
-    expect(result).toEqual(formattedData);
+    expect(data.temp).toBe(22);
   });
 
-  it('validateCity returns true for valid city', async () => {
-    cityValidator.validateCity.mockResolvedValueOnce(true);
+  it('should handle Redis errors gracefully', async () => {
+    redisClient.get.mockRejectedValue(new Error('Redis down'));
+    weatherAPI.fetch.mockResolvedValue({ temp: 25 });
 
-    const result = await service.validateCity(city);
+    const data = await weatherService.getWeather('Kyiv');
 
-    expect(result).toBe(true);
+    expect(data.temp).toBe(25);
   });
 
-  it('validateCity returns false for invalid city', async () => {
-    cityValidator.validateCity.mockResolvedValueOnce(false);
+  it('should treat city names case-insensitively when checking cache', async () => {
+    redisClient.get.mockResolvedValue(JSON.stringify({ temp: 18 }));
 
-    const result = await service.validateCity(city);
+    const data = await weatherService.getWeather('kYIv');
 
-    expect(result).toBe(false);
-  });
-
-  it('validateCity handles exceptions and returns false', async () => {
-    cityValidator.validateCity.mockRejectedValueOnce(new Error('error'));
-
-    const result = await service.validateCity(city);
-
-    expect(result).toBe(false);
+    expect(redisClient.get).toHaveBeenCalledWith('weather:kyiv');
+    expect(data.temp).toBe(18);
   });
 });

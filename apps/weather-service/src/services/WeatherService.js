@@ -3,35 +3,29 @@ class WeatherService {
     weatherProvider,
     dataFormatter,
     cityValidator,
-    redisClient,
-    cacheHits,
-    cacheMisses,
+    redisProvider,
+    metrics,
   ) {
     this.weatherProvider = weatherProvider;
     this.dataFormatter = dataFormatter;
     this.cityValidator = cityValidator;
-    this.redisClient = redisClient;
-    this.cacheHits = cacheHits;
-    this.cacheMisses = cacheMisses;
+    this.redisProvider = redisProvider;
+    this.metrics = metrics;
   }
 
   async getWeather(city) {
     const CACHE_TTL = process.env.CACHE_TTL || 3600;
 
     const cacheKey = `weather:${city.toLowerCase()}`;
-    const cached = await this.redisClient.get(cacheKey);
+    const cached = await this.redisProvider.get(cacheKey);
     if (cached) {
-      this.cacheHits.inc();
-      return JSON.parse(cached);
+      this.metrics.incCacheHit();
+      return this.dataFormatter(JSON.parse(cached));
     }
 
-    this.cacheMisses.inc();
+    this.metrics.incCacheMiss();
     const weather = await this.weatherProvider.fetch(city);
-    await this.redisClient.setEx(
-      cacheKey,
-      CACHE_TTL,
-      JSON.stringify(this.dataFormatter(weather)),
-    );
+    await this.redisProvider.set(cacheKey, CACHE_TTL, weather);
     return this.dataFormatter(weather);
   }
 

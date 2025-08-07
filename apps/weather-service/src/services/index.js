@@ -3,10 +3,10 @@ const OpenWeatherMapProvider = require('../providers/OpenWeatherMapProvider');
 const LoggingWeatherProviderDecorator = require('../logging/LoggingWeatherProviderDecorator');
 const ChainWeatherProvider = require('../providers/ChainWeatherProvider');
 const WeatherService = require('./WeatherService');
-const redisClient = require('../utils/redisClient');
+const redisProvider = require('../cache/index');
 const { cityValidator } = require('../validation/cityValidator');
 const formatWeatherResponse = require('../utils/formatResponse');
-const { cacheHits, cacheMisses } = require('../metrics/metrics');
+const metrics = require('../metrics/MetricsService');
 
 const weatherAPIProvider = new LoggingWeatherProviderDecorator(
   new WeatherAPIProvider(),
@@ -27,9 +27,8 @@ const weatherService = new WeatherService(
   chainProvider,
   formatWeatherResponse,
   cityValidator,
-  redisClient,
-  cacheHits,
-  cacheMisses,
+  redisProvider,
+  metrics,
 );
 
 module.exports = weatherService;
