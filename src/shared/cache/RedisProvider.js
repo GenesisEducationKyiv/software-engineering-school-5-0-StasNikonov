@@ -40,7 +40,7 @@ class RedisProvider extends ICacheProvider {
     return this.client.get(key);
   }
 
-  async set(key, value, ttl = 3600) {
+  async set(key, ttl = 3600, value) {
     return this.client.setEx(key, ttl, JSON.stringify(value));
   }
 }

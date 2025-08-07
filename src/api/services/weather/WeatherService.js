@@ -18,7 +18,7 @@ class WeatherService {
     this.metrics.incCacheMiss();
     const weather = await this.weatherProvider.fetch(city);
 
-    await this.redisProvider.set(cacheKey, CACHE_TTL, JSON.stringify(weather));
+    await this.redisProvider.set(cacheKey, CACHE_TTL, weather);
 
     return weather;
   }
