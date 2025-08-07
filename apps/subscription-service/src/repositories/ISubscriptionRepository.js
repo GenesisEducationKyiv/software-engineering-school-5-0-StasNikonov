@@ -1,5 +1,9 @@
 /**
+<<<<<<<< HEAD:apps/subscription-service/src/repositories/ISubscriptionRepository.js
  * @typedef {import('../../db/models/subscription').Subscription} Subscription
+========
+ * @typedef {import('../../../../db/models/subscription').Subscription} Subscription
+>>>>>>>> hw8-service-communication:src/api/domain/interfaces/repositories/ISubscriptionRepository.js
  */
 
 /**
