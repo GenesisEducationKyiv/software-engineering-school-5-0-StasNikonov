@@ -1,4 +1,4 @@
-const OpenWeatherCityValidator = require('../../api/infrastructure/validation/OpenWeatherCityValidator');
+const OpenWeatherCityValidator = require('../../api/presentation/validation/OpenWeatherCityValidator');
 
 describe('OpenWeatherCityValidator', () => {
   let validator;
@@ -44,21 +44,23 @@ describe('OpenWeatherCityValidator', () => {
     expect(result).toBe(false);
   });
 
-  it('should return false when response is not ok', async () => {
+  it('should throw error when response is not ok', async () => {
     fetch.mockResolvedValue({
       ok: false,
       status: 404,
       json: async () => [],
     });
 
-    const result = await validator.validateCity('UnknownCity');
-    expect(result).toBe(false);
+    await expect(validator.validateCity('UnknownCity')).rejects.toThrow(
+      'OpenWeatherMap status 404',
+    );
   });
 
-  it('should return false on fetch error', async () => {
+  it('should throw error on fetch error', async () => {
     fetch.mockRejectedValue(new Error('Network error'));
 
-    const result = await validator.validateCity('Kyiv');
-    expect(result).toBe(false);
+    await expect(validator.validateCity('Kyiv')).rejects.toThrow(
+      'Network error',
+    );
   });
 });

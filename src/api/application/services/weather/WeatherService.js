@@ -1,9 +1,8 @@
 class WeatherService {
-  constructor(weatherProvider, redisClient, cacheHits, cacheMisses) {
+  constructor(weatherProvider, redisProvider, metrics) {
     this.weatherProvider = weatherProvider;
-    this.redisClient = redisClient;
-    this.cacheHits = cacheHits;
-    this.cacheMisses = cacheMisses;
+    this.redisProvider = redisProvider;
+    this.metrics = metrics;
   }
 
   async getWeather(city) {
@@ -11,15 +10,15 @@ class WeatherService {
 
     const normalizedCity = city.trim().toLowerCase().replace(/\s+/g, '_');
     const cacheKey = `weather:${normalizedCity}`;
-    const cached = await this.redisClient.get(cacheKey);
+    const cached = await this.redisProvider.get(cacheKey);
     if (cached) {
-      this.cacheHits.inc();
+      this.metrics.incCacheHit();
       return JSON.parse(cached);
     }
-    this.cacheMisses.inc();
+    this.metrics.incCacheMiss();
     const weather = await this.weatherProvider.fetch(city);
 
-    await this.redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(weather));
+    await this.redisProvider.set(cacheKey, CACHE_TTL, weather);
 
     return weather;
   }

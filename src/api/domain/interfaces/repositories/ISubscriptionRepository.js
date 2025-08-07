@@ -1,5 +1,5 @@
 /**
- * @typedef {import('../../../db/models/subscription').Subscription} Subscription
+ * @typedef {import('../../../../db/models/subscription').Subscription} Subscription
  */
 
 /**

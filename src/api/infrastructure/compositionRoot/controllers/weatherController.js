@@ -1,6 +1,6 @@
 const WeatherController = require('../../../presentation/controllers/weather/WeatherController');
 const weatherService = require('../services/weatherService');
-const formatWeatherResponse = require('../../../application/formatters/formatWeatherResponse');
+const formatWeatherResponse = require('../../../presentation/formatters/formatWeatherResponse');
 
 const weatherController = new WeatherController(
   weatherService,

@@ -1,7 +1,9 @@
 const axios = require('axios');
-const AbstractWeatherProvider = require('../../domain/providers/IWeatherProvider');
+const AbstractWeatherProvider = require('../../domain/interfaces/providers/IWeatherProvider');
 
 class OpenWeatherMapProvider extends AbstractWeatherProvider {
+  static BASE_URL = 'http://api.openweathermap.org';
+
   async fetch(city) {
     const apiKey = process.env.OWM_API_KEY;
 
@@ -25,7 +27,7 @@ class OpenWeatherMapProvider extends AbstractWeatherProvider {
         city: name,
       };
     } catch (error) {
-      console.error('❌ OpenWeatherMap error:', error.message);
+      console.error('OpenWeatherMap error:', error.message);
       const err = new Error(
         'OpenWeatherMap failed and no fallback provider available',
       );

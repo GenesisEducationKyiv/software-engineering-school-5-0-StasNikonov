@@ -1,7 +1,9 @@
 const {
   createValidateWeatherInput,
 } = require('../../../presentation/middlewares/createValidateWeatherInput');
-const { cityValidator } = require('./cityValidator');
+const {
+  cityValidator,
+} = require('../../../presentation/validation/cityValidator');
 
 const validateWeatherInput = createValidateWeatherInput(cityValidator);
 

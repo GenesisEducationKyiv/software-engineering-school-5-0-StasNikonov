@@ -1,9 +1,9 @@
 const validateWeatherInput = require('../../../src/api/infrastructure/compositionRoot/validators/validateWeatherInput');
 const {
   cityValidator,
-} = require('../../api/infrastructure/compositionRoot/validators/cityValidator');
+} = require('../../api/presentation/validation/cityValidator');
 
-jest.mock('../../api/infrastructure/compositionRoot/validators/cityValidator');
+jest.mock('../../api/presentation/validation/cityValidator');
 
 describe('validateWeatherInput middleware', () => {
   let req, res, next;

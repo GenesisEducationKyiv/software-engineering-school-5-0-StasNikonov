@@ -2,5 +2,6 @@ node_modules/
 .idea/
 .env
 .DS_Store
-src/api/infrastructure/logging/provider.log
+src/api/infrastructure/logs/provider.log
+playwright-report/
 test-results/

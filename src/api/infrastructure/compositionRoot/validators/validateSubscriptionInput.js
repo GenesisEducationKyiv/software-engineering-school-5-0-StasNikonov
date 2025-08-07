@@ -1,10 +1,12 @@
 const {
   createValidateSubscriptionInput,
 } = require('../../../presentation/middlewares/createValidateSubscriptionInput');
-const { cityValidator } = require('./cityValidator');
+const {
+  cityValidator,
+} = require('../../../presentation/validation/cityValidator');
 const {
   isValidEmail,
-} = require('../../../application/utils/validateSubscriptionFields');
+} = require('../../../presentation/validation/validateSubscriptionFields');
 
 const validateSubscriptionInput = createValidateSubscriptionInput(
   cityValidator,

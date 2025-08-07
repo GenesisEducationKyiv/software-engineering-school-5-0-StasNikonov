@@ -1,5 +1,5 @@
 const { Subscription } = require('../../../db/models');
-const ISubscriptionRepository = require('../../domain/repositories/ISubscriptionRepository');
+const ISubscriptionRepository = require('../../domain/interfaces/repositories/ISubscriptionRepository');
 
 class SubscriptionRepository extends ISubscriptionRepository {
   findSubscription = (email, city) => {
