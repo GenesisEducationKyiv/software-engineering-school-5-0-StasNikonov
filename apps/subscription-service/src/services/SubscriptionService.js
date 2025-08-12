@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
-const { publishToQueue } = require('../broker/publishToQueue');
+const publishToQueue = require('../broker/publishToQueue');
 
 class SubscriptionService {
   constructor(subscriptionRepository) {

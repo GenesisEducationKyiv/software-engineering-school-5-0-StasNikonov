@@ -1,8 +1,6 @@
-jest.mock('../../src/broker/publishToQueue', () => ({
-  publishToQueue: jest.fn(),
-}));
+jest.mock('../../src/broker/publishToQueue', () => jest.fn());
 
-const { publishToQueue } = require('../../src/broker/publishToQueue');
+const publishToQueue = require('../../src/broker/publishToQueue');
 const SubscriptionService = require('../../src/services/SubscriptionService');
 
 describe('SubscriptionService', () => {
