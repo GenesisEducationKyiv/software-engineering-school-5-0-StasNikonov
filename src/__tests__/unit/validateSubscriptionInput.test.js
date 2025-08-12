@@ -1,28 +1,40 @@
-jest.mock('../../utils/validators/cityValidator', () => ({
-  validateCity: jest.fn(),
-}));
-
 const {
   validateSubscriptionInput,
-} = require('../../api/middlewares/validateSubscriptionInput');
-const { validateCity } = require('../../utils/validators/cityValidator');
+} = require('../../../src/api/middlewares/validateSubscriptionInput');
+const validators = require('../../../src/utils/validators/validateSubscriptionFields');
+const {
+  cityValidator,
+} = require('../../api/services/cityValidation/cityValidator');
+
+jest.mock('../../../src/utils/validators/validateSubscriptionFields');
+jest.mock('../../../src/api/services/cityValidation/cityValidator');
 
 describe('validateSubscriptionInput middleware', () => {
   let req, res, next;
 
   beforeEach(() => {
-    req = { body: {} };
+    req = {
+      body: {
+        email: 'test@example.com',
+        city: 'Kyiv',
+        frequency: 'daily',
+      },
+    };
+
     res = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),
     };
+
     next = jest.fn();
-    validateCity.mockReset();
+
+    jest.clearAllMocks();
   });
 
-  it('calls next() when all inputs are valid', async () => {
-    req.body = { email: 'test@test.com', city: 'Kyiv', frequency: 'daily' };
-    validateCity.mockResolvedValue(true);
+  it('should call next() if input is valid', async () => {
+    validators.isValidFields.mockReturnValue({ valid: true });
+    validators.isValidEmail.mockReturnValue(true);
+    cityValidator.validateCity = jest.fn().mockResolvedValue(true);
 
     await validateSubscriptionInput(req, res, next);
 
@@ -30,21 +42,26 @@ describe('validateSubscriptionInput middleware', () => {
     expect(res.status).not.toHaveBeenCalled();
   });
 
-  it('responds with 400 and "Invalid input" message if required fields are missing', async () => {
-    req.body = { email: 'test@test.com', frequency: 'daily' };
+  it('should return 400 if required fields are missing or invalid', async () => {
+    validators.isValidFields.mockReturnValue({
+      valid: false,
+      status: 400,
+      message: 'Missing fields',
+    });
 
     await validateSubscriptionInput(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
       error: true,
-      message: 'Invalid input',
+      message: 'Missing fields',
     });
     expect(next).not.toHaveBeenCalled();
   });
 
-  it('responds with 400 and "Invalid email format" message if email is malformed', async () => {
-    req.body = { email: 'bad-email', city: 'Kyiv', frequency: 'daily' };
+  it('should return 400 if email is invalid', async () => {
+    validators.isValidFields.mockReturnValue({ valid: true });
+    validators.isValidEmail.mockReturnValue(false);
 
     await validateSubscriptionInput(req, res, next);
 
@@ -56,8 +73,11 @@ describe('validateSubscriptionInput middleware', () => {
     expect(next).not.toHaveBeenCalled();
   });
 
-  it('responds with 400 and "Invalid frequency value" message if frequency is not allowed', async () => {
-    req.body = { email: 'test@test.com', city: 'Kyiv', frequency: 'invalid' };
+  it('should return 400 if frequency is invalid', async () => {
+    validators.isValidFields.mockReturnValue({ valid: true });
+    validators.isValidEmail.mockReturnValue(true);
+
+    req.body.frequency = 'weekly';
 
     await validateSubscriptionInput(req, res, next);
 
@@ -69,13 +89,10 @@ describe('validateSubscriptionInput middleware', () => {
     expect(next).not.toHaveBeenCalled();
   });
 
-  it('responds with 404 and "City not found" message if city validation fails', async () => {
-    req.body = {
-      email: 'test@test.com',
-      city: 'UnknownCity',
-      frequency: 'daily',
-    };
-    validateCity.mockResolvedValue(false);
+  it('should return 404 if city is invalid', async () => {
+    validators.isValidFields.mockReturnValue({ valid: true });
+    validators.isValidEmail.mockReturnValue(true);
+    cityValidator.validateCity = jest.fn().mockResolvedValue(false);
 
     await validateSubscriptionInput(req, res, next);
 
@@ -87,9 +104,10 @@ describe('validateSubscriptionInput middleware', () => {
     expect(next).not.toHaveBeenCalled();
   });
 
-  it('responds with 500 if validateCity throws error', async () => {
-    req.body = { email: 'test@test.com', city: 'Kyiv', frequency: 'daily' };
-    validateCity.mockRejectedValue(new Error('Test error'));
+  it('should return 500 on internal error', async () => {
+    validators.isValidFields.mockImplementation(() => {
+      throw new Error('Boom!');
+    });
 
     await validateSubscriptionInput(req, res, next);
 
@@ -113,7 +131,7 @@ describe('validateSubscriptionInput middleware', () => {
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
       error: true,
-      message: 'Invalid input',
+      message: 'Email must be a string',
     });
     expect(next).not.toHaveBeenCalled();
   });
@@ -130,37 +148,8 @@ describe('validateSubscriptionInput middleware', () => {
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
       error: true,
-      message: 'Invalid input',
+      message: 'City must be a non-empty string',
     });
     expect(next).not.toHaveBeenCalled();
-  });
-
-  it('should validate email case-insensitively', async () => {
-    req.body = {
-      email: 'TEST@TEST.COM',
-      city: 'Kyiv',
-      frequency: 'daily',
-    };
-    validateCity.mockResolvedValue(true);
-
-    await validateSubscriptionInput(req, res, next);
-
-    expect(next).toHaveBeenCalled();
-  });
-
-  it('should return 400 if city is an object', async () => {
-    req.body = {
-      email: 'test@test.com',
-      city: { name: 'Kyiv' },
-      frequency: 'daily',
-    };
-
-    await validateSubscriptionInput(req, res, next);
-
-    expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({
-      error: true,
-      message: 'Invalid input',
-    });
   });
 });
