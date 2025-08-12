@@ -1,8 +1,11 @@
-version: '3.8'
-
 services:
   weather-service:
-    build: ./apps/weather-service
+    build:
+      context: .
+      dockerfile: apps/weather-service/Dockerfile
+    ports:
+      - '50051:50051'
+      - '9100:9100'
     depends_on:
       - redis
     environment:
@@ -18,7 +21,12 @@ services:
       - ./apps/proto:/proto
 
   subscription-service:
-    build: ./apps/subscription-service
+    build:
+      context: .
+      dockerfile: apps/subscription-service/Dockerfile
+    ports:
+      - '50052:50052'
+      - '9101:9101'
     depends_on:
       postgres:
         condition: service_healthy
@@ -37,7 +45,12 @@ services:
       - ./apps/proto:/proto
 
   notification-service:
-    build: apps/notification-service
+    build:
+      context: .
+      dockerfile: apps/notification-service/Dockerfile
+    ports:
+      - '50053:50053'
+      - '9102:9102'
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -52,7 +65,9 @@ services:
       - ./apps/proto:/proto
 
   api-gateway:
-    build: ./apps/api-gateway
+    build:
+      context: .
+      dockerfile: apps/api-gateway/Dockerfile
     ports:
       - '3001:3001'
     depends_on:

@@ -6,13 +6,14 @@ jest.mock('../../src/logging/logProviderResponse');
 
 describe('WeatherAPIProvider', () => {
   const city = 'Lviv';
+  const loggerMock = { error: jest.fn() };
   let provider;
 
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.WEATHER_API_KEY = 'test_key';
     process.env.WEATHER_API_BASE_URL = 'test_url';
-    provider = new WeatherAPIProvider();
+    provider = new WeatherAPIProvider(loggerMock);
   });
 
   it('should return weather data for a city', async () => {

@@ -3,37 +3,58 @@ class WeatherService {
     weatherProvider,
     dataFormatter,
     cityValidator,
-    redisProvider,
+    redisClient,
+    logger,
     metrics,
   ) {
     this.weatherProvider = weatherProvider;
     this.dataFormatter = dataFormatter;
     this.cityValidator = cityValidator;
-    this.redisProvider = redisProvider;
+    this.redisClient = redisClient;
+    this.logger = logger;
     this.metrics = metrics;
   }
 
   async getWeather(city) {
-    const CACHE_TTL = process.env.CACHE_TTL || 3600;
+    this.logger.info(`Getting weather for city: ${city}`);
+    this.metrics.incWeatherRequests();
 
+    const CACHE_TTL = process.env.CACHE_TTL || 3600;
     const cacheKey = `weather:${city.toLowerCase()}`;
-    const cached = await this.redisProvider.get(cacheKey);
+
+    const timer = this.metrics.startWeatherTimer();
+
+    const cached = await this.redisClient.get(cacheKey);
     if (cached) {
-      this.metrics.incCacheHit();
-      return this.dataFormatter(JSON.parse(cached));
+      this.metrics.incCacheHits();
+      this.logger.info(`Cache HIT for city: ${city}`);
+
+      timer({ source: 'cache' });
+      return JSON.parse(cached);
     }
 
-    this.metrics.incCacheMiss();
+    this.metrics.incCacheMisses();
+    this.logger.info(`Cache MISS for city: ${city}`);
+
     const weather = await this.weatherProvider.fetch(city);
-    await this.redisProvider.set(cacheKey, CACHE_TTL, weather);
+
+    await this.redisClient.setEx(
+      cacheKey,
+      CACHE_TTL,
+      JSON.stringify(this.dataFormatter(weather)),
+    );
+
+    timer({ source: 'api' });
     return this.dataFormatter(weather);
   }
 
   async validateCity(city) {
     try {
+      this.metrics.incValidateCityRequests();
       return await this.cityValidator.validateCity(city);
     } catch (error) {
-      console.error('validateCity error:', error.message);
+      this.metrics.incValidateCityError();
+      this.logger.error(`validateCity error: ${error.message}`);
       return false;
     }
   }

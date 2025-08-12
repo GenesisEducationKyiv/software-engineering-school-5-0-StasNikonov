@@ -1,5 +1,11 @@
-const emailAdapter = require('../../src/adapters/index');
+jest.mock('../../../../shared/logger/index', () => ({
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+  debug: jest.fn(),
+}));
 
+const emailAdapter = require('../../src/adapters/index');
 jest.mock('../../src/adapters/index');
 
 describe('confirmationEmailConsumer handler', () => {

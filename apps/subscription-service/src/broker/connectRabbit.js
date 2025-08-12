@@ -1,6 +1,7 @@
 const amqp = require('amqplib');
+const logger = require('../../../../shared/logger/index');
 
-const connectRabbit = async (retries = 5, delayMs = 2000) => {
+const connectRabbit = async (retries = 10, delayMs = 5000) => {
   for (let i = 0; i < retries; i++) {
     try {
       const connection = await amqp.connect(
@@ -11,18 +12,17 @@ const connectRabbit = async (retries = 5, delayMs = 2000) => {
       await channel.assertQueue('send_forecast_email', { durable: true });
       await channel.assertQueue('send_confirmation_email', { durable: true });
 
-      console.log('[RabbitMQ] Connected and queues asserted');
+      logger.info('[RabbitMQ] Connected and queues asserted');
       return channel;
     } catch (error) {
-      console.error(
-        `[RabbitMQ] Connection attempt ${i + 1} failed:`,
-        error.message,
+      logger.error(
+        `[RabbitMQ] Connection attempt ${i + 1} failed: ${error.message}`,
       );
       if (i < retries - 1) {
-        console.log(`Retrying in ${delayMs} ms...`);
+        logger.info(`Retrying in ${delayMs} ms...`);
         await new Promise((resolve) => setTimeout(resolve, delayMs));
       } else {
-        console.error('[RabbitMQ] All connection attempts failed. Exiting...');
+        logger.error('[RabbitMQ] All connection attempts failed. Exiting...');
         process.exit(1);
       }
     }

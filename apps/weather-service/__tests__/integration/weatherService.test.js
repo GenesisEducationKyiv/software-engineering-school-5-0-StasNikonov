@@ -13,19 +13,28 @@ describe('WeatherService Integration Test (with Redis)', () => {
       .mockResolvedValue({ temp: 25, city: 'Lviv', condition: 'rainy' }),
   };
 
+  const mockLogger = {
+    info: jest.fn(),
+    error: jest.fn(),
+  };
+
+  const mockMetrics = {
+    incWeatherRequests: jest.fn(),
+    startWeatherTimer: jest.fn(() => jest.fn()),
+    incCacheHits: jest.fn(),
+    incCacheMisses: jest.fn(),
+    incValidateCityRequests: jest.fn(),
+    incValidateCityError: jest.fn(),
+  };
+
   const mockFormatter = jest.fn((data) => ({
     city: data.city,
-    temperature: data.temp ?? data.temperature,
+    temperature: data.temp,
     condition: data.condition,
   }));
 
   const mockValidator = {
     validateCity: jest.fn().mockResolvedValue(true),
-  };
-
-  const mockMetrics = {
-    incCacheHit: jest.fn(),
-    incCacheMiss: jest.fn(),
   };
 
   beforeAll(async () => {
@@ -42,17 +51,12 @@ describe('WeatherService Integration Test (with Redis)', () => {
 
     await redisClient.connect();
 
-    const redisProvider = {
-      get: (key) => redisClient.get(key),
-      set: (key, ttl, value) =>
-        redisClient.setEx(key, ttl, JSON.stringify(value)),
-    };
-
     weatherService = new WeatherService(
       mockProvider,
       mockFormatter,
       mockValidator,
-      redisProvider,
+      redisClient,
+      mockLogger,
       mockMetrics,
     );
   });
@@ -71,9 +75,9 @@ describe('WeatherService Integration Test (with Redis)', () => {
     const result = await weatherService.getWeather('Lviv');
 
     expect(mockProvider.fetch).toHaveBeenCalledTimes(1);
-    expect(mockMetrics.incCacheMiss).toHaveBeenCalledTimes(1);
-    expect(mockMetrics.incCacheHit).not.toHaveBeenCalled();
-    expect(mockFormatter).toHaveBeenCalledTimes(1);
+    expect(mockMetrics.incCacheMisses).toHaveBeenCalledTimes(1);
+    expect(mockMetrics.incCacheHits).not.toHaveBeenCalled();
+    expect(mockFormatter).toHaveBeenCalledTimes(2);
     expect(result).toEqual({
       city: 'Lviv',
       temperature: 25,
@@ -83,7 +87,7 @@ describe('WeatherService Integration Test (with Redis)', () => {
     const cached = await redisClient.get('weather:lviv');
     expect(JSON.parse(cached)).toEqual({
       city: 'Lviv',
-      temp: 25,
+      temperature: 25,
       condition: 'rainy',
     });
   });
@@ -98,8 +102,8 @@ describe('WeatherService Integration Test (with Redis)', () => {
     const result = await weatherService.getWeather('Lviv');
 
     expect(mockProvider.fetch).not.toHaveBeenCalled();
-    expect(mockMetrics.incCacheHit).toHaveBeenCalledTimes(1);
-    expect(mockMetrics.incCacheMiss).not.toHaveBeenCalled();
+    expect(mockMetrics.incCacheHits).toHaveBeenCalledTimes(1);
+    expect(mockMetrics.incCacheMisses).not.toHaveBeenCalled();
     expect(result).toEqual({
       city: 'Lviv',
       temperature: 30,
