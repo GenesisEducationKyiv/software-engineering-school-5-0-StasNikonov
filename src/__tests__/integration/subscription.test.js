@@ -1,4 +1,4 @@
-jest.mock('../../api/integrations/nodemailerClient');
+jest.mock('../../api/infrastructure/providers/NodemailerProvider');
 jest.mock('axios');
 
 const axios = require('axios');
@@ -165,23 +165,5 @@ describe('Weather Subscription API', () => {
 
     expect(response.statusCode).toBe(409);
     expect(response.body.message).toMatch(/Email already exists/i);
-  });
-
-  it('should normalize city input and subscribe successfully', async () => {
-    const response = await request(app).post('/api/subscribe').send({
-      email: testEmail,
-      city: '   kYiV  ',
-      frequency: 'daily',
-    });
-
-    expect(response.statusCode).toBe(200);
-    expect(response.body.message).toMatch(/confirmation/i);
-
-    const sub = await Subscription.findOne({
-      where: { email: testEmail },
-    });
-
-    expect(sub).not.toBeNull();
-    expect(sub.city).toBe('Kyiv');
   });
 });

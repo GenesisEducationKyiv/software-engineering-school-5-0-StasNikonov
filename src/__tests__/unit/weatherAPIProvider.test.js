@@ -1,6 +1,6 @@
 const axios = require('axios');
-const WeatherAPIProvider = require('../../../src/api/providers/WeatherAPIProvider');
-const ChainWeatherProvider = require('../../api/providers/ChainWeatherProvider');
+const WeatherAPIProvider = require('../../../src/api/infrastructure/providers/WeatherAPIProvider');
+const ChainWeatherProvider = require('../../api/infrastructure/providers/ChainWeatherProvider');
 
 jest.mock('axios');
 

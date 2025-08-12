@@ -1,10 +1,10 @@
 const request = require('supertest');
 const app = require('../../../app');
 const axios = require('axios');
-const redisProvider = require('../../shared/cache/index');
+const redisProvider = require('../../api/infrastructure/cache/index');
 
 jest.mock('axios');
-jest.mock('../../shared/cache/RedisProvider');
+jest.mock('../../api/infrastructure/cache/RedisProvider');
 
 describe('GET /api/weather', () => {
   const city = 'Kyiv';
@@ -15,7 +15,7 @@ describe('GET /api/weather', () => {
     redisProvider.get.mockResolvedValue(null);
     redisProvider.set.mockResolvedValue('OK');
 
-    jest.mock('../../shared/metrics/MetricsService', () => ({
+    jest.mock('../../api/infrastructure/metrics/MetricsService', () => ({
       incCacheHit: jest.fn(),
       incCacheMiss: jest.fn(),
     }));

@@ -1,5 +1,5 @@
-const WeatherEmailServiceTest = require('../../api/services/WeatherEmailService');
-const EmailAdapter = require('../../api/adapters/EmailAdapter');
+const WeatherEmailServiceTest = require('../../api/application/services/email/WeatherEmailService');
+const EmailAdapter = require('../../api/infrastructure/adapters/EmailAdapter');
 
 describe('WeatherEmailServiceTest', () => {
   let dbMock;

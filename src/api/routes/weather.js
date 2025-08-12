@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const weatherController = require('../controllers/weather/index');
-const { validateWeatherInput } = require('../middlewares/validateWeatherInput');
+const weatherController = require('../infrastructure/compositionRoot/controllers/weatherController');
+const validateWeatherInput = require('../infrastructure/compositionRoot/validators/validateWeatherInput');
 
 router.get(
   '/weather',

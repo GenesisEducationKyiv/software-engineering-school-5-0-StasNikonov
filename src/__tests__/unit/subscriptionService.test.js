@@ -1,4 +1,4 @@
-const SubscriptionService = require('../../api/services/subscription/SubscriptionService');
+const SubscriptionService = require('../../api/application/services/subscription/SubscriptionService');
 
 describe('SubscriptionService', () => {
   let subscriptionRepository;

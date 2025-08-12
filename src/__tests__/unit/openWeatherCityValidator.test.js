@@ -1,4 +1,4 @@
-const OpenWeatherCityValidator = require('../../../src/api/services/cityValidation/OpenWeatherCityValidator');
+const OpenWeatherCityValidator = require('../../api/presentation/validation/OpenWeatherCityValidator');
 
 describe('OpenWeatherCityValidator', () => {
   let validator;
