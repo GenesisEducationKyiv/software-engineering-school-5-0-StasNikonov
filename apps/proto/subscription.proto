@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package subscription;
+
+service SubscriptionService {
+    rpc Subscribe(SubscribeRequest) returns (SubscriptionResponse);
+    rpc Confirm(ConfirmRequest) returns (SubscriptionResponse);
+    rpc Unsubscribe(UnsubscribeRequest) returns (SubscriptionResponse);
+    rpc GetConfirmedByFrequency(GetConfirmedRequest) returns (ConfirmedSubscribersResponse);
+}
+
+message SubscribeRequest {
+    string email = 1;
+    string city = 2;
+    string frequency = 3;
+}
+
+message ConfirmRequest {
+    string token = 1;
+}
+
+message UnsubscribeRequest {
+    string token = 1;
+}
+
+message SubscriptionResponse {
+    int32 status = 1;
+    string message = 2;
+}
+
+message GetConfirmedRequest {
+    string frequency = 1;
+}
+
+message Subscriber {
+    string email = 1;
+    string city = 2;
+}
+
+message ConfirmedSubscribersResponse {
+    repeated Subscriber subscribers = 1;
+}

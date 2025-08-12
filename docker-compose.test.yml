@@ -1,67 +1,112 @@
+version: '3.8'
+
 services:
-  test_db:
-    image: postgres:14
-    container_name: test_weather_db
+  weather-service:
+    build: ./apps/weather-service
+    depends_on:
+      - redis
     environment:
-      POSTGRES_DB: test_weather
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      WEATHER_API_KEY: test-weather-key
+      WEATHER_API_BASE_URL: https://test-weather-api.com
+      OWM_API_KEY: test-owm-key
+      OWM_API_BASE_URL: https://test-owm-api.com
+    networks:
+      - backend
+    volumes:
+      - ./apps/proto:/proto
+
+  subscription-service:
+    build: ./apps/subscription-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASS: test_pass
+      DB_NAME: test_db
+      MAILER_SERVICE_ADDRESS: mailer-service:50053
+    networks:
+      - backend
+    volumes:
+      - ./apps/proto:/proto
+
+  mailer-service:
+    build: ./apps/mailer-service
+    environment:
+      EMAIL_USER: test@example.com
+      EMAIL_PASS: testpass
+      WEATHER_SERVICE_ADDRESS: weather-service:50051
+      SUBSCRIPTION_SERVICE_ADDRESS: subscription-service:50052
+    networks:
+      - backend
+    volumes:
+      - ./apps/proto:/proto
+
+  api-gateway:
+    build: ./apps/api-gateway
+    ports:
+      - '3001:3001'
+    depends_on:
+      - weather-service
+      - subscription-service
+      - mailer-service
+    environment:
+      APIGATEWAY_PORT: 3001
+      WEATHER_SERVICE_ADDRESS: weather-service:50051
+      SUBSCRIPTION_SERVICE_ADDRESS: subscription-service:50052
+      MAILER_SERVICE_ADDRESS: mailer-service:50053
+    networks:
+      - backend
+    volumes:
+      - ./apps/proto:/proto
+
+  postgres:
+    image: postgres:14
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: test_pass
+      POSTGRES_DB: test_db
+    volumes:
+      - pgdata-test:/var/lib/postgresql/data
+    networks:
+      - backend
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres"]
-      interval: 5s
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 3s
       timeout: 5s
       retries: 5
-    ports:
-      - "5433:5432"
-    volumes:
-      - pgtestdata:/var/lib/postgresql/data
 
-  test_runner:
-    build:
-      context: .
-      dockerfile: Dockerfile.test
-    container_name: test_runner
-    env_file:
-      - .env.test
-    depends_on:
-      test_db:
-        condition: service_healthy
-      test_redis:
-        condition: service_started
-    command: npm test
-
-  test_redis:
+  redis:
     image: redis:7
-    container_name: test_weather_redis
+    restart: always
     ports:
-      - "6380:6379"
+      - '6379:6379'
+    networks:
+      - backend
 
-  playwright_runner:
+  e2e-tests:
     build:
       context: .
       dockerfile: Dockerfile.playwright
-    container_name: playwright_runner
-    env_file:
-      - .env.test
     depends_on:
-      test_db:
-        condition: service_healthy
-      test_redis:
-        condition: service_started
-
-  migrate:
-    build:
-      context: .
-      dockerfile: Dockerfile.test
-    container_name: test_migrator
-    env_file:
-      - .env.test
-    depends_on:
-      test_db:
-        condition: service_healthy
-      test_redis:
-        condition: service_started
-    command: sh -c "npx sequelize-cli db:migrate --config src/db/config/config.js"
+      - api-gateway
+    networks:
+      - backend
+    environment:
+      PLAYWRIGHT_TEST_BASE_URL: http://api-gateway:3001
+    volumes:
+      - ./test/e2e:/app/test/e2e
 
 volumes:
-  pgtestdata:
+  pgdata-test:
+
+networks:
+  backend:
+    driver: bridge

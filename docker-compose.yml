@@ -1,48 +1,83 @@
+version: '3.8'
+
 services:
-  api:
-    build: .
-    container_name: weather_api
+  weather-service:
+    build: ./apps/weather-service
     ports:
-      - "3000:3000"
+      - '50051:50051'
+    depends_on:
+      - redis
     env_file:
       - .env
-    depends_on:
-      - db
-      - redis
+    networks:
+      - backend
+    volumes:
+      - ./apps/proto:/proto
 
-  db:
+  subscription-service:
+    build: ./apps/subscription-service
+    ports:
+      - '50052:50052'
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    networks:
+      - backend
+    volumes:
+      - ./apps/proto:/proto
+
+  mailer-service:
+    build: ./apps/mailer-service
+    ports:
+      - '50053:50053'
+    env_file:
+      - .env
+    networks:
+      - backend
+    volumes:
+      - ./apps/proto:/proto
+
+  api-gateway:
+    build: ./apps/api-gateway
+    ports:
+      - '3001:3001'
+    depends_on:
+      - subscription-service
+      - weather-service
+      - mailer-service
+    env_file:
+      - .env
+    networks:
+      - backend
+    volumes:
+      - ./apps/proto:/proto
+
+  postgres:
     image: postgres:14
-    container_name: weather_db
     restart: always
+    ports:
+      - '5432:5432'
     environment:
-      POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: ${DB_NAME}
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
 
   redis:
     image: redis:7
-    container_name: weather_redis
     restart: always
     ports:
-      - "6379:6379"
-
-  prometheus:
-    image: prom/prometheus
-    container_name: prometheus
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
-
-  grafana:
-    image: grafana/grafana
-    container_name: grafana
-    ports:
-      - "3001:3000"
+      - '6379:6379'
+    networks:
+      - backend
 
 volumes:
   pgdata:
+
+networks:
+  backend:
+    driver: bridge
