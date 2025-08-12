@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Підписка на прогноз погоди</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 550px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f0f4f8;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input, select, button {
+            display: block;
+            width: 90%;
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 1rem;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<h2>Підписка на прогноз погоди</h2>
+<form id="subscribe-form">
+    <input type="text" id="email" placeholder="Ваш email"/>
+    <input type="text" id="city" placeholder="Місто (наприклад, Kyiv)"/>
+    <select id="frequency">
+        <option value="">Оберіть частоту</option>
+        <option value="hourly">Щогодини</option>
+        <option value="daily">Щодня</option>
+    </select>
+    <button type="submit">Підписатися</button>
+</form>
+
+<p id="message"></p>
+
+<script>
+  document.getElementById('subscribe-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const email = document.getElementById('email').value;
+    const city = document.getElementById('city').value;
+    const frequency = document.getElementById('frequency').value;
+
+    const formData = new URLSearchParams();
+    formData.append('email', email);
+    formData.append('city', city);
+    formData.append('frequency', frequency);
+
+    const response = await fetch('/api/subscribe', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: formData.toString()
+    });
+
+    const messageEl = document.getElementById('message');
+
+    if (response.ok) {
+      const data = await response.json();
+      messageEl.textContent = data.message || 'Підписка успішна!';
+      messageEl.style.color = 'green';
+    } else {
+      const error = await response.json();
+      messageEl.textContent = error.message || 'Сталася помилка';
+      messageEl.style.color = 'red';
+    }
+  });
+</script>
+</body>
+</html>

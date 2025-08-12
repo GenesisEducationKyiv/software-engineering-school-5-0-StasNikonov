@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package mailer;
+
+service MailerService {
+    rpc SendConfirmationEmail(ConfirmationEmailRequest) returns (EmailResponse);
+}
+
+message ConfirmationEmailRequest {
+    string email = 1;
+    string city = 2;
+    string token = 3;
+}
+
+message EmailResponse {
+    string message = 1;
+    int32 status = 2;
+}

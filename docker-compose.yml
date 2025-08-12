@@ -1,0 +1,128 @@
+services:
+  weather-service:
+    build:
+      context: .
+      dockerfile: apps/weather-service/Dockerfile
+    ports:
+      - '50051:50051'
+      - "9100:9100"
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      WEATHER_API_KEY: ${WEATHER_API_KEY}
+      WEATHER_API_BASE_URL: ${WEATHER_API_BASE_URL}
+      OWM_API_KEY: ${OWM_API_KEY}
+      OWM_API_BASE_URL: ${OWM_API_BASE_URL}
+    networks:
+      - backend
+    volumes:
+      - ./apps/proto:/proto
+
+  subscription-service:
+    build:
+      context: .
+      dockerfile: apps/subscription-service/Dockerfile
+    ports:
+      - '50052:50052'
+      - "9101:9101"
+    depends_on:
+      - postgres
+      - rabbitmq
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME}
+    networks:
+      - backend
+    volumes:
+      - ./apps/proto:/proto
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: apps/notification-service/Dockerfile
+    ports:
+      - '50053:50053'
+      - "9102:9102"
+    depends_on:
+      - rabbitmq
+    environment:
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASS: ${EMAIL_PASS}
+      WEATHER_SERVICE_ADDRESS: ${WEATHER_SERVICE_ADDRESS}
+    networks:
+      - backend
+    volumes:
+      - ./apps/proto:/proto
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: apps/api-gateway/Dockerfile
+    ports:
+      - '3001:3001'
+    depends_on:
+      - subscription-service
+      - weather-service
+      - notification-service
+    environment:
+      APIGATEWAY_PORT: ${APIGATEWAY_PORT}
+      SUBSCRIPTION_SERVICE_ADDRESS: ${SUBSCRIPTION_SERVICE_ADDRESS}
+      WEATHER_SERVICE_ADDRESS: ${WEATHER_SERVICE_ADDRESS}
+    networks:
+      - backend
+    volumes:
+      - ./apps/proto:/proto
+
+  postgres:
+    image: postgres:14
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  redis:
+    image: redis:7
+    restart: always
+    ports:
+      - '6379:6379'
+    networks:
+      - backend
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - backend
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - backend
+
+volumes:
+  pgdata:
+
+networks:
+  backend:
+    driver: bridge

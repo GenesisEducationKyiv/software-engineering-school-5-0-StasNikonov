@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'weather-service'
+    static_configs:
+      - targets: ['weather-service:9100']
+
+  - job_name: 'subscription-service'
+    static_configs:
+      - targets: ['subscription-service:9101']
+
+  - job_name: 'notification-service'
+    static_configs:
+      - targets: ['notification-service:9102']
