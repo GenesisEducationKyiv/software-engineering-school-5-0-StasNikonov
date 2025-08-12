@@ -8,7 +8,7 @@ jobs:
 
     strategy:
       matrix:
-        service: [weather-service, subscription-service, mailer-service]
+        service: [weather-service, subscription-service, notification-service]
 
     steps:
       - uses: actions/checkout@v4

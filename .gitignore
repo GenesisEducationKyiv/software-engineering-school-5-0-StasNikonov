@@ -4,4 +4,4 @@ node_modules/
 .DS_Store
 playwright-report/
 apps/weather-service/src/logging/logs
-test-results
+test-results/

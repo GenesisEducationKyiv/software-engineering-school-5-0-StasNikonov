@@ -18,7 +18,10 @@ The monolith will be decomposed into the following independent microservices:
 ---
 
 ### 2. **Subscription Service**
-- **Responsibility:** Manages user subscriptions (creation, confirmation, deletion).
+- **Responsibility:** 
+    - Manages user subscriptions (creation, confirmation, deletion).
+    - Initiates scheduled forecast email sending (cron jobs).
+    - Publish commands to message broker
 - **Stores:** User email, subscription frequency (`hourly`, `daily`).
 - **Interface:** gRPC
 
@@ -36,11 +39,11 @@ The monolith will be decomposed into the following independent microservices:
 
 ---
 
-### 4. **Mailer Service**
+### 4. **Notification Service**
 - **Responsibility:**
+    - Consume commands from message broker.
     - Sends confirmation, forecast, and unsubscribe emails.
     - Supports email templates.
-    - Initiates scheduled forecast email sending (cron jobs).
 - **Dependencies:**
     - External email providers (via SMTP)
 - **Interface:** gRPC (called by Subscription & Weather services)
@@ -51,21 +54,21 @@ The monolith will be decomposed into the following independent microservices:
 
 The optimal communication methods between services are as follows:
 
-| Source                | Destination          | Purpose                                                 | Protocol / Method      |
-|-----------------------|----------------------|---------------------------------------------------------|------------------------|
-| Client                | API Gateway          | Entry point for HTTP requests                           | **HTTP REST**          |
-| API Gateway           | Subscription Service | Manage user subscriptions                               | **gRPC**               |
-| API Gateway           | Weather Service      | Fetch weather info and validates the user-provided city | **gRPC**               |
-| Subscription  service | Mailer Service       | Send confirmation or unsubscribe email                  | **gRPC**               |
-| Weather Service       | External API         | Get weather forecast data                               | **HTTP**               |
-| Weather Service       | Redis                | Read/write cached weather data                          | **TCP / Redis client** |
-| Mailer Service        | Subscription Service | Get confirmed subscribers for forecast emails           | **gRPC**               |
-| Mailer Service        | Weather Service      | Get weather data for each subscriber's city             | **gRPC**               |
+| Source                | Destination          | Purpose                                                     | Protocol / Method      |
+|-----------------------|----------------------|-------------------------------------------------------------|------------------------|
+| Client                | API Gateway          | Entry point for HTTP requests                               | **HTTP REST**          |
+| API Gateway           | Subscription Service | Manage user subscriptions                                   | **gRPC**               |
+| API Gateway           | Weather Service      | Fetch weather info and validates the user-provided city     | **gRPC**               |
+| Subscription  service | Message broker       | Publish commands for sends forecast and confirmation emails | **AMQP (RabbitMQ)**    |
+| Weather Service       | External API         | Get weather forecast data                                   | **HTTP**               |
+| Weather Service       | Redis                | Read/write cached weather data                              | **TCP / Redis client** |
+| Notification Service  | Message broker       | Consume commands for start sending emails                   | **AMQP (RabbitMQ)**    |
+| Notification Service  | Weather Service      | Get weather data for each subscriber's city                 | **gRPC**               |
 
 ---
 
 ## Diagram Reference
 
 The following diagram illustrates the overall architecture and communication flow:
-![ServiceCommunication](ServicesCommunication.png)
+![ServiceCommunication](ServiceCommunication.png)
 
