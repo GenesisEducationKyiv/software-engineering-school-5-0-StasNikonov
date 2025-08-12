@@ -2,5 +2,5 @@ node_modules/
 .idea/
 .env
 .DS_Store
-src/utils/logs/provider.log
+src/shared/logs/provider.log
 playwright-report/

@@ -25,6 +25,7 @@ module.exports = defineConfig([
       ...js.configs.recommended.rules,
       'prettier/prettier': 'error',
       'linebreak-style': ['off'],
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
 ]);
