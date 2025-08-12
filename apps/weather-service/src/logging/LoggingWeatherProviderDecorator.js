@@ -11,7 +11,7 @@ class LoggingWeatherProviderDecorator {
     try {
       logProviderResponse(this.providerName, data);
     } catch (logError) {
-      console.warn('⚠️ Failed to log provider response:', logError);
+      console.warn('Failed to log provider response:', logError);
     }
     return data;
   }

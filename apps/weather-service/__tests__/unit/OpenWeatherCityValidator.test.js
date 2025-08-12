@@ -5,71 +5,62 @@ describe('OpenWeatherCityValidator', () => {
 
   beforeEach(() => {
     validator = new OpenWeatherCityValidator();
-  });
 
-  beforeAll(() => {
     global.fetch = jest.fn();
   });
 
-  afterAll(() => {
+  afterEach(() => {
     jest.resetAllMocks();
+    delete global.fetch;
   });
 
-  test('should return true for valid city', async () => {
-    fetch.mockResolvedValueOnce({
+  it('should return true for valid city response', async () => {
+    fetch.mockResolvedValue({
       ok: true,
-      json: async () => [{ name: 'Lviv' }],
+      json: async () => [
+        {
+          name: 'Kyiv',
+          lat: 50.45,
+          lon: 30.52,
+          country: 'UA',
+        },
+      ],
     });
 
-    const result = await validator.validateCity('Lviv');
+    const result = await validator.validateCity('Kyiv');
     expect(result).toBe(true);
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('api.openweathermap.org/geo/1.0/direct?q=Kyiv'),
+    );
   });
 
-  test('should return false for empty array', async () => {
-    fetch.mockResolvedValueOnce({
+  it('should return false when response is ok but empty array', async () => {
+    fetch.mockResolvedValue({
       ok: true,
       json: async () => [],
     });
 
-    const result = await validator.validateCity('UnknownCity');
+    const result = await validator.validateCity('InvalidCity');
     expect(result).toBe(false);
   });
 
-  test('should return false for response not ok', async () => {
-    fetch.mockResolvedValueOnce({
+  it('should throw error when response is not ok', async () => {
+    fetch.mockResolvedValue({
       ok: false,
       status: 404,
+      json: async () => [],
     });
 
-    const consoleWarnSpy = jest
-      .spyOn(console, 'warn')
-      .mockImplementation(() => {});
-
-    const result = await validator.validateCity('UnknownCity');
-
-    expect(consoleWarnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('OpenWeatherMap returned status 404'),
+    await expect(validator.validateCity('UnknownCity')).rejects.toThrow(
+      'OpenWeatherMap status 404',
     );
-    expect(result).toBe(false);
-
-    consoleWarnSpy.mockRestore();
   });
 
-  test('should return false on fetch error', async () => {
-    fetch.mockRejectedValueOnce(new Error('Network error'));
+  it('should throw error on fetch error', async () => {
+    fetch.mockRejectedValue(new Error('Network error'));
 
-    const consoleErrorSpy = jest
-      .spyOn(console, 'error')
-      .mockImplementation(() => {});
-
-    const result = await validator.validateCity('UnknownCity');
-
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      'OpenWeatherMap validation error:',
+    await expect(validator.validateCity('Kyiv')).rejects.toThrow(
       'Network error',
     );
-    expect(result).toBe(false);
-
-    consoleErrorSpy.mockRestore();
   });
 });

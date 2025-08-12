@@ -5,7 +5,7 @@ const connectRabbit = async (retries = 10, delayMs = 5000) => {
   for (let i = 0; i < retries; i++) {
     try {
       const connection = await amqp.connect(
-        process.env.RABBITMQ_URL || 'amqp://rabbitmq:5672',
+        process.env.RABBITMQ_URL || 'amqp://127.0.0.1',
       );
       const channel = await connection.createChannel();
 
